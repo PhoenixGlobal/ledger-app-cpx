@@ -1,0 +1,15 @@
+eclipse.preferences.version=1
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1794037724/BOLOS_ENV/delimiter=\:
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1794037724/BOLOS_ENV/operation=replace
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1794037724/BOLOS_ENV/value=~/docker-shared/ledger-nano-s
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1794037724/BOLOS_SDK/delimiter=\:
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1794037724/BOLOS_SDK/operation=replace
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1794037724/BOLOS_SDK/value=~/docker-shared/ledger-nano-s/nanos-secure-sdk
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1794037724/CWD/delimiter=\:
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1794037724/CWD/operation=replace
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1794037724/CWD/value=~/docker-shared/ledger-nano-s/blue-app-neo/
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1794037724/PWD/delimiter=\:
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1794037724/PWD/operation=replace
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1794037724/PWD/value=~/docker-shared/ledger-nano-s/blue-app-neo/
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1794037724/append=true
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1794037724/appendContributed=true
