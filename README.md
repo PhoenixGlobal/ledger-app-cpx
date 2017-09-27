@@ -3,7 +3,7 @@
 This is the community edition of the Ledger Nano S app for the NEO Cryptocoin.
 
 Documentation on how it works is here:
-[sequence diagrams](docs/index.html)
+[sequence diagrams](https://coranos.github.io/blue-app-neo/docs/index.html)
 
 Run `make load` to build and load the application onto the device.
 
