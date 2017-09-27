@@ -1,4 +1,4 @@
-Title:Get Bip44 Path
+Title:Get Bip44 Path (Subroutine)
 participant Main Loop
 participant Get Bip44 Path
 
