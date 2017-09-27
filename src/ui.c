@@ -4,59 +4,73 @@
 
 #include "ui.h"
 
-// default font
+/** default font */
 #define DEFAULT_FONT BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER
 
-// text description font.
+/** text description font. */
 #define TX_DESC_FONT BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER
 
+/** UI state enum */
 enum UI_STATE uiState;
 
+/** UI state flag */
 ux_state_t ux;
 
-// private key in flash. const and N_ variable name are mandatory here
+/** private key in flash. const and N_ variable name are mandatory here */
 const cx_ecfp_private_key_t N_privateKey;
 
-// initialization marker in flash. const and N_ variable name are mandatory here
+/** initialization marker in flash. const and N_ variable name are mandatory here */
 const unsigned char N_initialized;
 
-// notification to restart the hash
+/** notification to restart the hash */
 unsigned char hashTainted;
 
-// the hash.
+/** the hash. */
 cx_sha256_t hash;
 
-// index of the current screen.
+/** index of the current screen. */
 unsigned int curr_scr_ix;
 
-// max index for all screens.
+/** max index for all screens. */
 unsigned int max_scr_ix;
 
-// raw transaction data.
+/** raw transaction data. */
 unsigned char raw_tx[MAX_TX_RAW_LENGTH];
 
-// current index into raw transaction.
+/** current index into raw transaction. */
 unsigned int raw_tx_ix;
 
-// current length of raw transaction.
+/** current length of raw transaction. */
 unsigned int raw_tx_len;
 
-// all text descriptions.
+/** all text descriptions. */
 char tx_desc[MAX_TX_TEXT_SCREENS][MAX_TX_TEXT_LINES][MAX_TX_TEXT_WIDTH];
 
-// currently displayed text description.
+/** currently displayed text description. */
 char curr_tx_desc[MAX_TX_TEXT_LINES][MAX_TX_TEXT_WIDTH];
 
+/** UI was touched indicating the user wants to exit the app */
 static const bagl_element_t * io_seproxyhal_touch_exit(const bagl_element_t *e);
+
+/** UI was touched indicating the user wants to deny te signature request */
 static const bagl_element_t * io_seproxyhal_touch_deny(const bagl_element_t *e);
 
+/** display part of the transaction description */
 static void ui_display_tx_desc(void);
+
+/** display the UI for signing a transaction */
 static void ui_sign(void);
+
+/** display the UI for denying a transaction */
 static void ui_deny(void);
 
+/** move up in the transaction description list */
 static void tx_desc_up(void);
+
+/** move down in the transaction description list */
 static void tx_desc_dn(void);
 
+/** UI struct for the idle screen */
 static const bagl_element_t bagl_ui_idle_nanos[] = {
 // { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
 // text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
@@ -70,6 +84,8 @@ static const bagl_element_t bagl_ui_idle_nanos[] = {
 };
 
 /**
+ * buttons for the idle screen
+ *
  * exit on Left button, or on Both buttons. Do nothing on Right button only.
  */
 static unsigned int bagl_ui_idle_nanos_button(unsigned int button_mask, unsigned int button_mask_counter) {
@@ -83,6 +99,7 @@ static unsigned int bagl_ui_idle_nanos_button(unsigned int button_mask, unsigned
 	return 0;
 }
 
+/** UI struct for the top "Sign Transaction" screen */
 static const bagl_element_t bagl_ui_top_sign_nanos[] = {
 // { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
 // text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
@@ -102,6 +119,8 @@ static const bagl_element_t bagl_ui_top_sign_nanos[] = {
 };
 
 /**
+ * buttons for the top "Sign Transaction" screen
+ *
  * up on Left button, down on right button, sign on both buttons.
  */
 static unsigned int bagl_ui_top_sign_nanos_button(unsigned int button_mask, unsigned int button_mask_counter) {
@@ -121,6 +140,7 @@ static unsigned int bagl_ui_top_sign_nanos_button(unsigned int button_mask, unsi
 	return 0;
 }
 
+/** UI struct for the bottom "Sign Transaction" screen */
 static const bagl_element_t bagl_ui_sign_nanos[] = {
 // { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
 // text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
@@ -140,6 +160,8 @@ static const bagl_element_t bagl_ui_sign_nanos[] = {
 };
 
 /**
+ * buttons for the bottom "Sign Transaction" screen
+ *
  * up on Left button, down on right button, sign on both buttons.
  */
 static unsigned int bagl_ui_sign_nanos_button(unsigned int button_mask, unsigned int button_mask_counter) {
@@ -159,6 +181,7 @@ static unsigned int bagl_ui_sign_nanos_button(unsigned int button_mask, unsigned
 	return 0;
 }
 
+/** UI struct for the bottom "Deny Transaction" screen */
 static const bagl_element_t bagl_ui_deny_nanos[] = {
 // { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
 // text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
@@ -176,6 +199,8 @@ static const bagl_element_t bagl_ui_deny_nanos[] = {
 };
 
 /**
+ * buttons for the bottom "Deny Transaction" screen
+ *
  * up on Left button, down on right button, deny on both buttons.
  */
 static unsigned int bagl_ui_deny_nanos_button(unsigned int button_mask, unsigned int button_mask_counter) {
@@ -195,6 +220,7 @@ static unsigned int bagl_ui_deny_nanos_button(unsigned int button_mask, unsigned
 	return 0;
 }
 
+/** UI struct for the transaction description screen */
 static const bagl_element_t bagl_ui_tx_desc_nanos[] = {
 // { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
 // text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
@@ -213,6 +239,11 @@ static const bagl_element_t bagl_ui_tx_desc_nanos[] = {
 /* */
 };
 
+/**
+ * buttons for the transaction description screen
+ *
+ * up on Left button, down on right button.
+ */
 static unsigned int bagl_ui_tx_desc_nanos_button(unsigned int button_mask, unsigned int button_mask_counter) {
 	switch (button_mask) {
 	case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
@@ -226,16 +257,19 @@ static unsigned int bagl_ui_tx_desc_nanos_button(unsigned int button_mask, unsig
 	return 0;
 }
 
+/** if the user wants to exit go back to the app dashboard. */
 static const bagl_element_t *io_seproxyhal_touch_exit(const bagl_element_t *e) {
 	// Go back to the dashboard
 	os_sched_exit(0);
 	return NULL; // do not redraw the widget
 }
 
+/** copy the current row of the tx_desc buffer into curr_tx_desc to display on the screen */
 static void copy_tx_desc(void) {
 	os_memmove(curr_tx_desc, tx_desc[curr_scr_ix], CURR_TX_DESC_LEN);
 }
 
+/** processes the Up button */
 static void tx_desc_up(void) {
 	switch (uiState) {
 	case UI_TOP_SIGN:
@@ -268,6 +302,7 @@ static void tx_desc_up(void) {
 	}
 }
 
+/** processes the Down button */
 static void tx_desc_dn(void) {
 	switch (uiState) {
 	case UI_TOP_SIGN:
@@ -296,6 +331,7 @@ static void tx_desc_dn(void) {
 	}
 }
 
+/** processes the transaction approval. the UI is only displayed when all of the TX has been sent over for signing. */
 const bagl_element_t*io_seproxyhal_touch_approve(const bagl_element_t *e) {
 	unsigned int tx = 0;
 	unsigned int len = get_apdu_buffer_length();
@@ -330,6 +366,7 @@ const bagl_element_t*io_seproxyhal_touch_approve(const bagl_element_t *e) {
 	return 0; // do not redraw the widget
 }
 
+/** deny signing. */
 static const bagl_element_t *io_seproxyhal_touch_deny(const bagl_element_t *e) {
 	hashTainted = 1;
 	raw_tx_ix = 0;
@@ -343,31 +380,37 @@ static const bagl_element_t *io_seproxyhal_touch_deny(const bagl_element_t *e) {
 	return 0; // do not redraw the widget
 }
 
+/** show the idle screen. */
 void ui_idle(void) {
 	uiState = UI_IDLE;
 	UX_DISPLAY(bagl_ui_idle_nanos, NULL);
 }
 
+/** show the transaction description screen. */
 static void ui_display_tx_desc(void) {
 	uiState = UI_TX_DESC;
 	UX_DISPLAY(bagl_ui_tx_desc_nanos, NULL);
 }
 
+/** show the bottom "Sign Transaction" screen. */
 static void ui_sign(void) {
 	uiState = UI_SIGN;
 	UX_DISPLAY(bagl_ui_sign_nanos, NULL);
 }
 
+/** show the top "Sign Transaction" screen. */
 void ui_top_sign(void) {
 	uiState = UI_TOP_SIGN;
 	UX_DISPLAY(bagl_ui_top_sign_nanos, NULL);
 }
 
+/** show the "deny" screen */
 static void ui_deny(void) {
 	uiState = UI_DENY;
 	UX_DISPLAY(bagl_ui_deny_nanos, NULL);
 }
 
+/** returns the length of the transaction in the buffer. */
 unsigned int get_apdu_buffer_length() {
 	unsigned int len0 = G_io_apdu_buffer[APDU_BODY_LENGTH_OFFSET];
 	return len0 / 2;

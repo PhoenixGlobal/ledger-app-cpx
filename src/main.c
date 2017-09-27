@@ -252,8 +252,7 @@ unsigned char io_event(unsigned char channel) {
 
 	case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
 		if (UX_DISPLAYED()) {
-			// TODO perform actions after all screen elements have been
-			// displayed
+			// perform actions after all screen elements have been displayed
 		} else {
 			UX_DISPLAYED_EVENT();
 		}

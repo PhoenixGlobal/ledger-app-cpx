@@ -3,6 +3,40 @@
  */
 #include "neo.h"
 
+/** if true, show a screen with the transaction type. */
+#define SHOW_TX_TYPE true
+
+/** if true, show a screen with the transaction length. */
+#define SHOW_TX_LEN false
+
+/** if true, show a screen with the transaction version. */
+#define SHOW_VERSION false
+
+/** if true, show the tx-type exclusive data, such as coin claims for a Claim Tx */
+#define SHOW_EXCLUSIVE_DATA false
+
+/** if true, show number of attributes. */
+#define SHOW_NUM_ATTRIBUTES false
+
+/** if true, show number of tx-in coin references. */
+#define SHOW_NUM_COIN_REFERENCES false
+
+/** if true, show number of output transactions. */
+#define SHOW_NUM_TX_OUTS false
+
+/** if true, show tx-out values in hex as well as decimal. */
+#define SHOW_VALUE_HEX false
+
+/** if true, show script hash screen as well as address screen */
+#define SHOW_SCRIPT_HASH false
+
+/**
+ * each CoinReference has two fields:
+ *  UInt256 PrevHash = 32 bytes.
+ *  ushort PrevIndex = 2 bytes.
+ */
+#define COIN_REFERENCES_LEN (32 + 2)
+
 /** length of tx.output.value */
 #define VALUE_LEN 8
 
@@ -94,13 +128,16 @@ enum TransactionAttributeUsage {
 /** MAX_TX_TEXT_WIDTH in blanks, used for clearing a line of text */
 static const char TXT_BLANK[] = "                 ";
 
-/** #### Asset IDs, currently only NEO and GAS are supported, alll others show up as UNKNOWN */
+/** #### Asset IDs #### */
+/** currently only NEO and GAS are supported, alll others show up as UNKNOWN */
 
 /** NEO's asset id. */
 static const char NEO_ASSET_ID[] = "C56F33FC6ECFCD0C225C4AB356FEE59390AF8560BE0E930FAEBE74A6DAFF7C9B";
 
 /** GAS's asset id. */
 static const char GAS_ASSET_ID[] = "602C79718B16E442DE58778E148D0B1084E3B2DFFD5DE6B7B16CEE7969282DE7";
+
+/** #### End Of Asset IDs #### */
 
 /** NEO asset's label. */
 static const char TXT_ASSET_NEO[] = "NEO";
@@ -200,25 +237,26 @@ static unsigned int encode_base_58(const void *in, unsigned int length, char *ou
 }
 
 /** encodes in_length bytes from in into the given base, using the given alphabet. writes the converted bytes to out, stopping when it converts out_length bytes. */
-static unsigned int encode_base_x(const char * alphabet, unsigned int alphabet_len, const void * in, unsigned int length, char * out, unsigned int maxoutlen) {
+static unsigned int encode_base_x(const char * alphabet, unsigned int alphabet_len, const void * in, unsigned int in_length, char * out,
+		unsigned int out_length) {
 	char tmp[164];
 	char buffer[164];
 	unsigned char j;
 	unsigned char startAt;
 	unsigned char zeroCount = 0;
-	if (length > sizeof(tmp)) {
+	if (in_length > sizeof(tmp)) {
 		THROW(INVALID_PARAMETER);
 	}
-	os_memmove(tmp, in, length);
-	while ((zeroCount < length) && (tmp[zeroCount] == 0)) {
+	os_memmove(tmp, in, in_length);
+	while ((zeroCount < in_length) && (tmp[zeroCount] == 0)) {
 		++zeroCount;
 	}
-	j = 2 * length;
+	j = 2 * in_length;
 	startAt = zeroCount;
-	while (startAt < length) {
+	while (startAt < in_length) {
 		unsigned short remainder = 0;
 		unsigned char divLoop;
-		for (divLoop = startAt; divLoop < length; divLoop++) {
+		for (divLoop = startAt; divLoop < in_length; divLoop++) {
 			unsigned short digit256 = (unsigned short) (tmp[divLoop] & 0xff);
 			unsigned short tmpDiv = remainder * 256 + digit256;
 			tmp[divLoop] = (unsigned char) (tmpDiv / alphabet_len);
@@ -229,31 +267,36 @@ static unsigned int encode_base_x(const char * alphabet, unsigned int alphabet_l
 		}
 		buffer[--j] = *(alphabet + remainder);
 	}
-	while ((j < (2 * length)) && (buffer[j] == *(alphabet + 0))) {
+	while ((j < (2 * in_length)) && (buffer[j] == *(alphabet + 0))) {
 		++j;
 	}
 	while (zeroCount-- > 0) {
 		buffer[--j] = *(alphabet + 0);
 	}
-	length = 2 * length - j;
-	if (maxoutlen < length) {
+	in_length = 2 * in_length - j;
+	if (out_length < in_length) {
 //		THROW(EXCEPTION_OVERFLOW);
-		os_memmove(out, (buffer + j), maxoutlen);
-		return maxoutlen;
+		os_memmove(out, (buffer + j), out_length);
+		return out_length;
 	} else {
-		os_memmove(out, (buffer + j), length);
-		return length;
+		os_memmove(out, (buffer + j), in_length);
+		return in_length;
 	}
 }
 
-static void to_base10_100m(char * dest, const unsigned char * value, unsigned int dest_len) {
+/** converts a value to base10 with a decimal point at DECIMAL_PLACE_OFFSET, which should be 100,000,000 or 100 million, thus the suffix 100m */
+static void to_base10_100m(char * dest, const unsigned char * value, const unsigned int dest_len) {
+	// reverse the array
 	unsigned char reverse_value[VALUE_LEN];
 	for (int ix = 0; ix < VALUE_LEN; ix++) {
 		reverse_value[ix] = *(value + ((VALUE_LEN - 1) - ix));
 	}
 
+	// encode in base10
 	char base10_buffer[MAX_TX_TEXT_WIDTH];
 	unsigned int buffer_len = encode_base_10(reverse_value, VALUE_LEN, base10_buffer, MAX_TX_TEXT_WIDTH);
+
+	// place the decimal place.
 	unsigned int dec_place_ix = buffer_len - DECIMAL_PLACE_OFFSET;
 	if (buffer_len < DECIMAL_PLACE_OFFSET) {
 		os_memmove(dest, TXT_LOW_VALUE, sizeof(TXT_LOW_VALUE));
@@ -262,32 +305,33 @@ static void to_base10_100m(char * dest, const unsigned char * value, unsigned in
 		os_memmove(dest, base10_buffer, dec_place_ix);
 		os_memmove(dest + dec_place_ix + 1, base10_buffer + dec_place_ix, buffer_len - dec_place_ix);
 	}
-	//encode_base_10(reverse_value, VALUE_LEN, dest, dest_len);
-
-//	char hex_buffer[MAX_TX_TEXT_WIDTH];
-//	unsigned int hex_buffer_len = min(MAX_HEX_BUFFER_LEN, VALUE_LEN) * 2;
-//	to_hex(hex_buffer, reverse_value, hex_buffer_len);
-//	os_memmove(dest, hex_buffer, min(hex_buffer_len,dest_len));
 }
 
+/** converts a NEO scripthas to a NEO address by adding a checksum and encoding in base58 */
 static void to_address(char * dest, unsigned char * script_hash, unsigned int dest_len) {
-	unsigned char address[ADDRESS_LEN];
 	static cx_sha256_t address_hash;
 	unsigned char address_hash_result_0[SHA256_HASH_LEN];
 	unsigned char address_hash_result_1[SHA256_HASH_LEN];
+
+	// concatenate the ADDRESS_VERSION and the address.
+	unsigned char address[ADDRESS_LEN];
 	address[0] = ADDRESS_VERSION;
 	os_memmove(address + 1, script_hash, SCRIPT_HASH_LEN);
 
+	// do a sha256 hash of the address twice.
 	cx_sha256_init(&address_hash);
 	cx_hash(&address_hash.header, CX_LAST, address, SCRIPT_HASH_LEN + 1, address_hash_result_0);
 	cx_sha256_init(&address_hash);
 	cx_hash(&address_hash.header, CX_LAST, address_hash_result_0, SHA256_HASH_LEN, address_hash_result_1);
 
+	// add the first bytes of the hash as a checksum at the end of the address.
 	os_memmove(address + 1 + SCRIPT_HASH_LEN, address_hash_result_1, SCRIPT_HASH_CHECKSUM_LEN);
 
+	// encode the version + address + cehcksum in base58
 	encode_base_58(address, ADDRESS_LEN, dest, dest_len);
 }
 
+/** converts a byte array in src to a hex array in dest, using only dest_len bytes of dest before stopping. */
 static void to_hex(char * dest, const unsigned char * src, const unsigned int dest_len) {
 	for (unsigned int src_ix = 0, dest_ix = 0; dest_ix < dest_len; src_ix++, dest_ix += 2) {
 		unsigned char src_c = *(src + src_ix);
@@ -299,7 +343,8 @@ static void to_hex(char * dest, const unsigned char * src, const unsigned int de
 	}
 }
 
-static bool is_asset_id(unsigned char * asset_id, const char * asset_id_hex) {
+/** returns true if the byte array in asset_id matches the hex in asset_id_hex. */
+static bool is_asset_id(const unsigned char * asset_id, const char * asset_id_hex) {
 	for (int asset_id_ix = ASSET_ID_LEN - 1, asset_id_hex_ix = 0; asset_id_ix >= 0; asset_id_ix--, asset_id_hex_ix += 2) {
 		unsigned char asset_id_c = *(asset_id + asset_id_ix);
 		unsigned char nibble0 = (asset_id_c >> 4) & 0xF;
@@ -315,6 +360,7 @@ static bool is_asset_id(unsigned char * asset_id, const char * asset_id_hex) {
 	return true;
 }
 
+/** returns the minimum of two ints. */
 static unsigned int min(unsigned int i0, unsigned int i1) {
 	if (i0 < i1) {
 		return i0;
@@ -323,6 +369,7 @@ static unsigned int min(unsigned int i0, unsigned int i1) {
 	}
 }
 
+/** skips the given number of bytes in the raw_tx buffer. If this goes off the end of the buffer, throw an error. */
 static void skip_raw_tx(unsigned int tx_skip) {
 	raw_tx_ix += tx_skip;
 	if (raw_tx_ix >= raw_tx_len) {
@@ -330,6 +377,10 @@ static void skip_raw_tx(unsigned int tx_skip) {
 	}
 }
 
+/** returns the number of bytes to read for the next varbytes array.
+ *  Currently throws an error if the encoded value should be over 253,
+ *   which should never happen in this use case of a varbyte array
+ */
 static unsigned char next_raw_tx_varbytes_num() {
 	unsigned char num = next_raw_tx();
 	switch (num) {
@@ -344,12 +395,14 @@ static unsigned char next_raw_tx_varbytes_num() {
 	return num;
 }
 
+/** fills the array in arr with the given number of bytes from raw_tx. */
 static void next_raw_tx_arr(unsigned char * arr, unsigned int length) {
 	for (unsigned int ix = 0; ix < length; ix++) {
 		*(arr + ix) = next_raw_tx();
 	}
 }
 
+/** returns the next byte in raw_tx and increments raw_tx_ix. If this would increment raw_tx_ix over the end of the buffer, throw an error. */
 static unsigned char next_raw_tx() {
 	if (raw_tx_ix < raw_tx_len) {
 		unsigned char retval = raw_tx[raw_tx_ix];
@@ -361,21 +414,7 @@ static unsigned char next_raw_tx() {
 	}
 }
 
-#define SHOW_TX_TYPE true
-#define SHOW_TX_LEN false
-#define SHOW_VERSION false
-#define SHOW_EXCLUSIVE_DATA false
-#define SHOW_NUM_ATTRIBUTES false
-#define SHOW_NUM_COIN_REFERENCES false
-#define SHOW_NUM_TX_OUTS false
-#define SHOW_VALUE_HEX false
-#define SHOW_SCRIPT_HASH false
-
-// each CoinReference has two fields:
-// UInt256 PrevHash = 32 bytes.
-// ushort PrevIndex = 2 bytes.
-#define COIN_REFERENCES_LEN (32 + 2)
-
+/** parse the raw transaction in raw_tx and fill up the screens in tx_desc. */
 unsigned char display_tx_desc() {
 	unsigned int scr_ix = 0;
 	char hex_buffer[MAX_TX_TEXT_WIDTH];
@@ -452,7 +491,7 @@ unsigned char display_tx_desc() {
 		}
 	}
 
-	// ExclusiveData
+	// the exclusive data screen.
 	switch (trans_type) {
 	case TX_CLAIM: {
 		unsigned char num_coin_claims = next_raw_tx_varbytes_num();

@@ -11,6 +11,7 @@
 #include "os_io_seproxyhal.h"
 #include "ui.h"
 
+/** parse the raw transaction in raw_tx and fill up the screens in tx_desc. */
 unsigned char display_tx_desc(void);
 
 #endif // NEO_H
