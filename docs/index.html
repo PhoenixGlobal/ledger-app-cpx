@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Blue App NEO Sequence Diagram</title>
+</head>
+<body onload="onLoad();">
+  <!-- https://bramp.github.io/js-sequence-diagrams/ -->
+  <div id="main_seq"></div>
+  <hr>
+  <div id="sign_tx_seq"></div>
+  <hr>
+  <div id="pub_key_seq"></div>
+  <hr>
+  <div id="bip44_path"></div>
+  <script src="js-lib/jquery-3.2.1.js"></script>
+  <script src="js-lib/webfont-1.6.6.js"></script>
+  <script src="js-lib/snap.svg-0.4.1.min.js"></script>
+  <script src="js-lib/underscore-1.8.3.min.js"></script>
+  <script src="js-lib/sequence-diagram-2.0.1.min.js"></script>
+  <script src="js-lib/load-text.js"></script>
+  <script>
+      function loadDiagramCallback (id, response) {
+        var data = response;
+
+        var diagram = Diagram.parse(data);
+        diagram.drawSVG(id, {
+          theme : "simple"
+        });
+      }
+
+      function loadSeq (id) {
+        var url = id + ".txt";
+        loadText(url, function (response) {
+          loadDiagramCallback(id, response);
+        });
+      };
+
+      function onLoad () {
+        loadSeq("main_seq");
+        loadSeq("sign_tx_seq");
+        loadSeq("pub_key_seq");
+        loadSeq("bip44_path");
+      }
+    </script>
+</body>
+</html>

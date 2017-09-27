@@ -1,0 +1,6 @@
+Title:Get Bip44 Path
+participant Main Loop
+participant Get Bip44 Path
+
+Main Loop->Get Bip44 Path:Request Sent
+Get Bip44 Path-->>Main Loop:Returns BIP44_PATH with the suffix 0x9000 indicating success.

@@ -1,0 +1,27 @@
+Title:Blue App NEO - Ledger Nano S App for NEO Cryptocoin.
+participant Wallet
+participant Dashboard
+participant Main Loop
+participant APDU
+participant Sign Transaction
+participant Get Public Key
+participant Get Bip44 Path
+
+Note over APDU: Application Protocol Data Unit
+Wallet->Main Loop:Request Sent
+Main Loop->Main Loop:Checks Length Is Not Zero
+Main Loop-->>Wallet:On Error, return 0x6982
+Main Loop->Main Loop:Checks First Byte is 0x80
+Main Loop-->>Wallet:On Error, return 0x6E00 
+Main Loop->Main Loop:Checks Second Byte
+Main Loop->Sign Transaction:INS_SIGN
+Main Loop->Get Public Key:INS_GET_PUBLIC_KEY
+Main Loop->Get Bip44 Path:INS_GET_BIP44_PATH
+Main Loop-->>Dashboard:0xFF, Exit Program
+Main Loop-->>Wallet:Unrecognized Command, return 0x6D00
+
+# A->B: Normal line
+# B-->C: Dashed line
+# C->>D: Open arrow
+# D-->>A: Dashed open arrow
+
