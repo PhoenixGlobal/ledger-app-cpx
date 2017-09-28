@@ -1,6 +1,6 @@
-Title:Get Bip44 Path (Subroutine)
+Title:[2] Get Bip44 Path (Subroutine)
 participant Main Loop
 participant Get Bip44 Path
 
 Main Loop->Get Bip44 Path:Request Sent
-Get Bip44 Path-->>Main Loop:Returns BIP44_PATH with the suffix 0x9000 indicating success.
+Get Bip44 Path-->>Main Loop:Returns BIP44_PATH (20 bytes), with suffix 0x9000, meaning success. 

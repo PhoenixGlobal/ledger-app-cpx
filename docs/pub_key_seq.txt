@@ -1,4 +1,4 @@
-Title:Get Public Key (Subroutine)
+Title:[1] Get Public Key (Subroutine)
 participant Main Loop
 participant Get Public Key
 participant cx_ecfp_generate_pair
@@ -8,5 +8,6 @@ Note over cx_ecfp_generate_pair: using the given elliptic curve.
 
 Main Loop->Get Public Key:Request Sent
 Get Public Key->Get Public Key:loads privateKey into memory.
-Get Public Key->cx_ecfp_generate_pair:(CX_CURVE_256R1, publicKey, privateKey, keepprivate=1);
-Get Public Key-->>Main Loop:Returns publicKey.W (65bytes) with the suffix 0x9000 indicating success.
+Get Public Key->cx_ecfp_generate_pair:cx_ecfp_generate_pair
+Note over cx_ecfp_generate_pair:(CX_CURVE_256R1, publicKey, privateKey, keepprivate=1);
+Get Public Key-->>Main Loop:Returns publicKey.W (65 bytes), with suffix 0x9000, meaning success.

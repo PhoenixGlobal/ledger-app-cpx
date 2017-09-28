@@ -1,0 +1,6 @@
+Title:[3.2] ui_top_sign (Subroutine)
+participant Sign Transaction
+participant ui_top_sign
+
+Sign Transaction->ui_top_sign:Request Sent
+ui_top_sign-->>Sign Transaction:return

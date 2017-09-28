@@ -1,3 +1,37 @@
-Title:Sign Transaction (Subroutine)
+Title:[3] Sign Transaction (Subroutine)
 participant Main Loop
 participant Sign Transaction
+participant Error 0x6A86
+participant Reset sha256 Hash
+participant raw_tx
+participant display_tx_desc
+participant tx_desc
+participant ui_top_sign
+participant io_seproxyhal_touch_approve
+
+Note over raw_tx: Raw transaction data
+Note over display_tx_desc: parses the raw_tx into tx_desc
+Note over display_tx_desc: parses the raw_tx into tx_desc
+
+Main Loop->Sign Transaction:Request Sent
+
+Sign Transaction->Error 0x6A86:Check Byte #2, if it's not P1_MORE or P1_LAST, error.
+Error 0x6A86-->>Main Loop:Returns 0x6A86 (2 bytes)
+
+Sign Transaction->Reset sha256 Hash:if this is the first INS_SIGN (hashTainted = true) Reset the hash, and the raw_tx.
+Reset sha256 Hash-->>Sign Transaction:return
+Sign Transaction->raw_tx:Add contents of G_io_apdu_buffer to raw_tx.
+raw_tx-->>Sign Transaction:return
+
+Sign Transaction->display_tx_desc:Check Byte #2, if it's P1_LAST, call display_tx_desc
+Note over display_tx_desc: [3.1]
+display_tx_desc->tx_desc:Add contents of raw_tx to tx_desc, in a human readable form.
+tx_desc-->>display_tx_desc:return
+display_tx_desc-->>Sign Transaction:return
+
+Sign Transaction->ui_top_sign:Check Byte #2, if it's P1_LAST, change UI from "Wake Up, Neo..." to the top "Sign Tx Now" screen.
+Note over ui_top_sign: [3.2]
+
+Sign Transaction->io_seproxyhal_touch_approve:Check Byte #2, if it's P1_MORE, call io_seproxyhal_touch_approve
+Note over io_seproxyhal_touch_approve: [3.3]
+io_seproxyhal_touch_approve-->>Sign Transaction:return
