@@ -311,9 +311,9 @@ __attribute__((section(".boot"))) int main(void) {
 						}
 
 						// initialize the BIP44_PATH
-						BIP44_PATH[0] = 888 | 0x80000000;
-						BIP44_PATH[1] = 0 | 0x80000000;
-						BIP44_PATH[2] = 0 | 0x80000000;
+						BIP44_PATH[0] = 44 	| 0x80000000;
+						BIP44_PATH[1] = 888	| 0x80000000;
+						BIP44_PATH[2] = 0	| 0x80000000;
 						BIP44_PATH[3] = 0;
 						BIP44_PATH[4] = 0;
 
