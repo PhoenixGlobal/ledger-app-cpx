@@ -1,0 +1,11 @@
+Title:[?] ui_display_tx_desc (Subroutine)
+participant ui_display_tx_desc
+participant ui_top_sign
+participant tx_desc_dn
+participant tx_desc_up
+
+ui_display_tx_desc->tx_desc_dn:if right button is pressed, go down a screen
+Note over tx_desc_dn: if(curr_scr_ix < max_scr_ix - 1) {ui_top_sign();}
+tx_desc_dn->ui_top_sign:Request Sent
+Note over tx_desc_dn: if(curr_scr_ix = max_scr_ix - 1) {curr_scr_ix ++; copy_tx_desc(); ui_display_tx_desc();}
+tx_desc_dn->ui_display_tx_desc:Request Sent

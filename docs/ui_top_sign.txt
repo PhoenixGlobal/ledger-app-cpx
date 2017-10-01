@@ -1,6 +1,20 @@
 Title:[3.2] ui_top_sign (Subroutine)
 participant Sign Transaction
 participant ui_top_sign
+participant io_seproxyhal_touch_approve
+participant tx_desc_dn
+participant tx_desc_up
+participant ui_deny
+
+Note over io_seproxyhal_touch_approve: [3.1]
+Note over io_seproxyhal_touch_deny: [3.4]
 
 Sign Transaction->ui_top_sign:Request Sent
+
+ui_top_sign->io_seproxyhal_touch_approve:if both buttons are pressed, approve tx
+ui_top_sign->tx_desc_dn:if right button is pressed, go down a screen
+Note over tx_desc_dn: curr_scr_ix = 0; copy_tx_desc(); ui_display_tx_desc();
+ui_top_sign->tx_desc_up:if left button is pressed, go up a screen
+Note over tx_desc_up: ui_deny()
+
 ui_top_sign-->>Sign Transaction:return

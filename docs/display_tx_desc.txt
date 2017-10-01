@@ -1,6 +1,46 @@
 Title:[3.1] display_tx_desc (Subroutine)
 participant Sign Transaction
 participant display_tx_desc
+participant tx_desc
+participant scr_ix
 
 Sign Transaction->display_tx_desc:Request Sent
+display_tx_desc->scr_ix:set screen number to 0
+scr_ix-->>display_tx_desc:return
+
+Note over tx_desc: Transaction Type Screen
+display_tx_desc->tx_desc:move Transaction Type to line 1 of current screen
+tx_desc-->>display_tx_desc:return
+display_tx_desc->scr_ix:increment screen number
+scr_ix-->>display_tx_desc:return
+
+display_tx_desc->display_tx_desc:skip showing the version
+display_tx_desc->display_tx_desc:skip showing the exclusive data (like coin_claims for claim tx's)
+display_tx_desc->display_tx_desc:skip showing the attributes
+display_tx_desc->display_tx_desc:skip showing the coin references
+display_tx_desc->display_tx_desc:skip showing the number of tx_outs
+
+Note over display_tx_desc: [3.1.1] for every tx_out
+Note over display_tx_desc: [3.1.1] repeat the below loop
+
+Note over tx_desc: Asset Id and Value Screen
+display_tx_desc->tx_desc:move Tx Out Asset Id (NEO, GAS, UNKNOWN) to line 0 of current screen
+tx_desc-->>display_tx_desc:return
+display_tx_desc->tx_desc:move Tx Out Value to line 1 of current screen
+tx_desc-->>display_tx_desc:return
+display_tx_desc->scr_ix:increment screen number
+scr_ix-->>display_tx_desc:return
+
+Note over tx_desc: Destination Address Screen
+display_tx_desc->tx_desc:move characters 0 to 10 of the Dest Addr to line 0 of current screen
+tx_desc-->>display_tx_desc:return
+display_tx_desc->tx_desc:move characters 11 to 21 of the Dest Addr to line 1 of current screen
+tx_desc-->>display_tx_desc:return
+display_tx_desc->tx_desc:move characters 22 to 34 of the Dest Addr to line 2 of current screen
+tx_desc-->>display_tx_desc:return
+display_tx_desc->scr_ix:increment screen number
+scr_ix-->>display_tx_desc:return
+
+Note over display_tx_desc: loop back to [3.1.1]
+
 display_tx_desc-->>Sign Transaction:return

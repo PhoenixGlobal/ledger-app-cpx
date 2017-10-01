@@ -37,15 +37,15 @@ for textToSign in textToSignArray:
 	try:
 		offset = 0
 		while offset <> len(textToSign):
-			if (len(textToSign) - offset) > 127:
-				chunk = textToSign[offset : offset + 127] 
+			if (len(textToSign) - offset) > 255:
+				chunk = textToSign[offset : offset + 255] 
 			else:
 				chunk = textToSign[offset:]
 			if (offset + len(chunk)) == len(textToSign):
 				p1 = 0x80
 			else:
 				p1 = 0x00
-			apdu = bytes("8002".decode('hex')) + chr(p1) + chr(0x00) + chr(len(chunk) * 2) + bytes(chunk)
+			apdu = bytes("8002".decode('hex')) + chr(p1) + chr(0x00) + chr(len(chunk)) + bytes(chunk)
 			signature = dongle.exchange(apdu)
 			offset += len(chunk)  	
 		print "signature " + str(signature).encode('hex')

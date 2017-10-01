@@ -1,0 +1,13 @@
+Title:[?] ui_sign (Subroutine)
+participant ui_sign
+participant tx_desc_dn
+participant tx_desc_up
+participant ui_deny
+participant ui_display_tx_desc
+
+ui_sign->io_seproxyhal_touch_approve:if both buttons are pressed, approve tx
+ui_sign->tx_desc_dn:if right button is pressed, go down a screen
+Note over tx_desc_dn: ui_deny()
+tx_desc_up->ui_deny:Request Sent
+ui_sign->tx_desc_up:if left button is pressed, go up a screen
+Note over tx_desc_up: curr_scr_ix = max_scr_ix - 1; copy_tx_desc(); ui_display_tx_desc();
