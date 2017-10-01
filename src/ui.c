@@ -413,5 +413,5 @@ static void ui_deny(void) {
 /** returns the length of the transaction in the buffer. */
 unsigned int get_apdu_buffer_length() {
 	unsigned int len0 = G_io_apdu_buffer[APDU_BODY_LENGTH_OFFSET];
-	return len0 / 2;
+	return len0;
 }
