@@ -6,8 +6,9 @@ participant tx_desc_dn
 participant tx_desc_up
 participant ui_deny
 
-Note over io_seproxyhal_touch_approve: [3.1]
+Note over io_seproxyhal_touch_approve: [3.8]
 Note over io_seproxyhal_touch_deny: [3.4]
+Note over ui_display_tx_desc: [3.7]
 
 Sign Transaction->ui_top_sign:Request Sent
 

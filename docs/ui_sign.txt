@@ -1,9 +1,14 @@
-Title:[?] ui_sign (Subroutine)
+Title:[3.5] ui_sign (Subroutine)
 participant ui_sign
 participant tx_desc_dn
 participant tx_desc_up
 participant ui_deny
 participant ui_display_tx_desc
+participant io_seproxyhal_touch_approve
+
+Note over ui_deny: [3.6]
+Note over ui_display_tx_desc: [3.7]
+Note over io_seproxyhal_touch_approve: [3.8]
 
 ui_sign->io_seproxyhal_touch_approve:if both buttons are pressed, approve tx
 ui_sign->tx_desc_dn:if right button is pressed, go down a screen

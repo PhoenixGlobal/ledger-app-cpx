@@ -1,6 +1,12 @@
-Title:[3.1] io_seproxyhal_touch_approve (Subroutine)
-participant Sign Transaction
-participant io_seproxyhal_touch_approve
+Title:[3.4] io_seproxyhal_touch_deny (Subroutine)
+participant io_seproxyhal_touch_deny
 
-Sign Transaction->io_seproxyhal_touch_approve:Request Sent
-io_seproxyhal_touch_approve-->>Sign Transaction:return
+io_seproxyhal_touch_deny->io_seproxyhal_touch_deny:set hashTainted to 1 (indicating hash should be reset on next call)
+io_seproxyhal_touch_deny->io_seproxyhal_touch_deny:reset raw_tx_ix and raw_tx_len to 0, to be ready for next transaction.
+
+io_seproxyhal_touch_deny->io_seproxyhal_touch_deny:append 0x6985 to the end of the return message, indicating signature denial.
+
+io_seproxyhal_touch_deny->io_exchange:send the return message back over USB.
+io_exchange-->>io_seproxyhal_touch_deny:return
+
+io_seproxyhal_touch_deny->ui_idle:show the ui_idle screen

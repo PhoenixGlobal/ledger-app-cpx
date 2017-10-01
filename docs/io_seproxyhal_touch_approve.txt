@@ -1,6 +1,26 @@
-Title:[3.1] io_seproxyhal_touch_approve (Subroutine)
-participant Sign Transaction
+Title:[3.8] io_seproxyhal_touch_approve (Subroutine)
 participant io_seproxyhal_touch_approve
+participant io_seproxyhal_touch_approve_sign
+participant cx_hash
+participant ui_idle
 
-Sign Transaction->io_seproxyhal_touch_approve:Request Sent
-io_seproxyhal_touch_approve-->>Sign Transaction:return
+io_seproxyhal_touch_approve->cx_hash:update hash with new data from G_io_apdu_buffer
+cx_hash-->>io_seproxyhal_touch_approve:return
+
+io_seproxyhal_touch_approve->io_seproxyhal_touch_approve_sign:if the second byte of G_io_apdu_buffer is P1_LAST, sign tx and add to return message.
+io_seproxyhal_touch_approve_sign->cx_ecdsa_sign:sign the message, using the private key.
+cx_ecdsa_sign-->>io_seproxyhal_touch_approve_sign:return
+
+io_seproxyhal_touch_approve_sign->io_seproxyhal_touch_approve_sign:set hashTainted to 1 (indicating hash should be reset on next call)
+io_seproxyhal_touch_approve_sign->io_seproxyhal_touch_approve_sign:reset raw_tx_ix and raw_tx_len to 0, to be ready for next transaction.
+io_seproxyhal_touch_approve_sign->io_seproxyhal_touch_approve_sign:append 0xFFFF to the end of the return nessage, to indicate end of the signature, and beginning of the hash.
+io_seproxyhal_touch_approve_sign->io_seproxyhal_touch_approve_sign:append the sha256 hash that was signed to the end of the signature. (This will be vital to debug any tx signing algorithm problems).
+
+io_seproxyhal_touch_approve_sign-->>io_seproxyhal_touch_approve:return
+
+io_seproxyhal_touch_approve->io_seproxyhal_touch_approve:append 0x9000 to the end of the return message, indicating success.
+
+io_seproxyhal_touch_approve->io_exchange:send the return message back over USB.
+io_exchange-->>io_seproxyhal_touch_approve:return
+
+io_seproxyhal_touch_approve->ui_idle:show the ui_idle screen

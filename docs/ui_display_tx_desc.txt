@@ -1,4 +1,4 @@
-Title:[?] ui_display_tx_desc (Subroutine)
+Title:[3.7] ui_display_tx_desc (Subroutine)
 participant ui_display_tx_desc
 participant ui_top_sign
 participant tx_desc_dn

@@ -1300,7 +1300,7 @@ if (typeof Snap != 'undefined') {
   var SnapTheme = function(diagram, options, resume) {
         _.defaults(options, {
             'css-class': 'simple',
-            'font-size': 16,
+            'font-size': 12,
             'font-family': 'Andale Mono, monospace'
           });
 

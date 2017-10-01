@@ -12,6 +12,7 @@ participant io_seproxyhal_touch_approve
 Note over raw_tx: Raw transaction data
 Note over display_tx_desc: parses the raw_tx into tx_desc
 Note over display_tx_desc: parses the raw_tx into tx_desc
+Note over io_seproxyhal_touch_approve: [3.8]
 
 Main Loop->Sign Transaction:Request Sent
 
