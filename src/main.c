@@ -131,6 +131,9 @@ static void neo_main(void) {
 							unsigned int len = get_apdu_buffer_length();
 							unsigned char * in = G_io_apdu_buffer + APDU_HEADER_LENGTH;
 							unsigned char * out = raw_tx + raw_tx_ix;
+							if(raw_tx_ix + len > MAX_TX_RAW_LENGTH) {
+								THROW(0x6D08);
+							}
 							os_memmove(out, in, len);
 							raw_tx_ix += len;
 
