@@ -22,6 +22,9 @@
 /** for signing, indicates this is not the last part of the transaction, there are more parts coming. */
 #define P1_MORE 0x00
 
+/** length of BIP44 path */
+#define BIP44_PATH_LEN 5
+
 /**
  * Nano S has 320 KB flash, 10 KB RAM, uses a ST31H320 chip.
  * This effectively limits the max size
@@ -58,12 +61,6 @@ extern enum UI_STATE uiState;
 
 /** UI state flag */
 extern ux_state_t ux;
-
-/** private key in flash. const and N_ variable name are mandatory here */
-extern const cx_ecfp_private_key_t N_privateKey;
-
-/** initialization marker in flash. const and N_ variable name are mandatory here */
-extern const unsigned char N_initialized;
 
 /** notification to restart the hash */
 extern unsigned char hashTainted;

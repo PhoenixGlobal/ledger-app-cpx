@@ -36,17 +36,9 @@ unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 /** instruction to send back the public key. */
 #define INS_GET_PUBLIC_KEY 0x04
 
-/** instruction to send back the bip44 path. */
-#define INS_GET_BIP44_PATH 0x05
 /** #### instructions end #### */
 
-/** length of BIP44 path */
-#define BIP44_PATH_LEN 5
-
-/** BIP44 path, used to derive the private key from the mnemonic by calling os_perso_derive_node_bip32. */
-static unsigned int BIP44_PATH[BIP44_PATH_LEN];
-
-// TODO: figure out what this function does, as it was copy/pasted from the sample app.
+/** some kind of event loop */
 unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
 	switch (channel & ~(IO_FLAGS)) {
 	case CHANNEL_KEYBOARD:
@@ -131,6 +123,9 @@ static void neo_main(void) {
 							unsigned int len = get_apdu_buffer_length();
 							unsigned char * in = G_io_apdu_buffer + APDU_HEADER_LENGTH;
 							unsigned char * out = raw_tx + raw_tx_ix;
+							if(raw_tx_ix + len > MAX_TX_RAW_LENGTH) {
+								THROW(0x6D08);
+							}
 							os_memmove(out, in, len);
 							raw_tx_ix += len;
 
@@ -167,8 +162,34 @@ static void neo_main(void) {
 							cx_ecfp_public_key_t publicKey;
 							cx_ecfp_private_key_t privateKey;
 
-							// put the private key into working memory.
-							os_memmove(&privateKey, &N_privateKey, sizeof(cx_ecfp_private_key_t));
+							/** BIP44 path, used to derive the private key from the mnemonic by calling os_perso_derive_node_bip32. */
+							unsigned char * in = G_io_apdu_buffer + APDU_HEADER_LENGTH;
+							unsigned int * bip44_in = (unsigned int *)in;
+//TODO: figure out why I can't read from the G_io_apdu_buffer as set in demo.py.
+							unsigned int bip44_path[BIP44_PATH_LEN];
+//							bip44_path[0] = *bip44_in;
+							bip44_path[0] = 44 	| 0x80000000;
+//							bip44_in++;
+
+//							bip44_path[1] = *bip44_in;
+							bip44_path[1] = 888	| 0x80000000;
+//							bip44_in++;
+
+//							bip44_path[2] = *bip44_in;
+							bip44_path[2] = 0	| 0x80000000;
+//							bip44_in++;
+
+//							bip44_path[3] = *bip44_in;
+							bip44_path[3] = 0;
+//							bip44_in++;
+
+//							bip44_path[4] = *bip44_in;
+							bip44_path[4] = 0;
+//							bip44_in++;
+
+							unsigned char privateKeyData[32];
+							os_perso_derive_node_bip32(CX_CURVE_256R1, bip44_path, BIP44_PATH_LEN, privateKeyData, NULL);
+							cx_ecdsa_init_private_key(CX_CURVE_256R1, privateKeyData, 32, &privateKey);
 
 							// generate the public key.
 							cx_ecfp_generate_pair(CX_CURVE_256R1, &publicKey, &privateKey, 1);
@@ -176,18 +197,6 @@ static void neo_main(void) {
 							// push the public key onto the response buffer.
 							os_memmove(G_io_apdu_buffer, publicKey.W, 65);
 							tx = 65;
-
-							// return 0x9000 OK.
-							THROW(0x9000);
-						}
-							break;
-
-							// we're asked for the bip44 path.
-						case INS_GET_BIP44_PATH: {
-							// push the public key onto the response buffer.
-							int size = BIP44_PATH_LEN * sizeof(unsigned int);
-							os_memmove(G_io_apdu_buffer, BIP44_PATH, size);
-							tx = size;
 
 							// return 0x9000 OK.
 							THROW(0x9000);
@@ -230,12 +239,12 @@ static void neo_main(void) {
 	return_to_dashboard: return;
 }
 
-// TODO: figure out what this function does, as it was copy/pasted from the sample app.
+/** display function */
 void io_seproxyhal_display(const bagl_element_t *element) {
 	io_seproxyhal_display_default((bagl_element_t *) element);
 }
 
-// TODO: figure out what this function does, as it was copy/pasted from the sample app.
+/* io event loop */
 unsigned char io_event(unsigned char channel) {
 // nothing done with the event, throw an error on the transport layer if
 // needed
@@ -297,33 +306,6 @@ __attribute__((section(".boot"))) int main(void) {
 			TRY
 				{
 					io_seproxyhal_init();
-
-					// Create the private key if not initialized
-					if (N_initialized != 0x01) {
-						unsigned char canary;
-						cx_ecfp_private_key_t privateKey;
-						cx_ecfp_public_key_t publicKey;
-
-						unsigned char privateKeyData[32];
-
-						if (!os_global_pin_is_validated()) {
-							return 0;
-						}
-
-						// initialize the BIP44_PATH
-						BIP44_PATH[0] = 44 	| 0x80000000;
-						BIP44_PATH[1] = 888	| 0x80000000;
-						BIP44_PATH[2] = 0	| 0x80000000;
-						BIP44_PATH[3] = 0;
-						BIP44_PATH[4] = 0;
-
-						os_perso_derive_node_bip32(CX_CURVE_256R1, BIP44_PATH, BIP44_PATH_LEN, privateKeyData, NULL);
-						cx_ecdsa_init_private_key(CX_CURVE_256R1, privateKeyData, 32, &privateKey);
-						cx_ecfp_generate_pair(CX_CURVE_256R1, &publicKey, &privateKey, 1);
-						nvm_write((void*) &N_privateKey, &privateKey, sizeof(privateKey));
-						canary = 0x01;
-						nvm_write((void*) &N_initialized, &canary, sizeof(canary));
-					}
 
 					USB_power(0);
 					USB_power(1);

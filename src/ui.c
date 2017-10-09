@@ -16,12 +16,6 @@ enum UI_STATE uiState;
 /** UI state flag */
 ux_state_t ux;
 
-/** private key in flash. const and N_ variable name are mandatory here */
-const cx_ecfp_private_key_t N_privateKey;
-
-/** initialization marker in flash. const and N_ variable name are mandatory here */
-const unsigned char N_initialized;
-
 /** notification to restart the hash */
 unsigned char hashTainted;
 
@@ -340,11 +334,41 @@ const bagl_element_t*io_seproxyhal_touch_approve(const bagl_element_t *e) {
 	// Update the hash
 	cx_hash(&hash.header, 0, in, len, NULL);
 	if (G_io_apdu_buffer[2] == P1_LAST) {
+		unsigned char * bip44_in = G_io_apdu_buffer + APDU_HEADER_LENGTH + len;
+
+		/** BIP44 path, used to derive the private key from the mnemonic by calling os_perso_derive_node_bip32. */
+		unsigned int bip44_path[BIP44_PATH_LEN];
+		//TODO: figure out why I can't read from the G_io_apdu_buffer as set in demo.py.
+//							bip44_path[0] = *bip44_in;
+		bip44_path[0] = 44 	| 0x80000000;
+//							bip44_in++;
+
+//							bip44_path[1] = *bip44_in;
+		bip44_path[1] = 888	| 0x80000000;
+//							bip44_in++;
+
+//							bip44_path[2] = *bip44_in;
+		bip44_path[2] = 0	| 0x80000000;
+//							bip44_in++;
+
+//							bip44_path[3] = *bip44_in;
+		bip44_path[3] = 0;
+//							bip44_in++;
+
+//							bip44_path[4] = *bip44_in;
+		bip44_path[4] = 0;
+//							bip44_in++;
+		unsigned char privateKeyData[32];
+		os_perso_derive_node_bip32(CX_CURVE_256R1, bip44_path, BIP44_PATH_LEN, privateKeyData, NULL);
+
+		cx_ecfp_private_key_t privateKey;
+		cx_ecdsa_init_private_key(CX_CURVE_256R1, privateKeyData, 32, &privateKey);
+
 		// Hash is finalized, send back the signature
 		unsigned char result[32];
 
 		cx_hash(&hash.header, CX_LAST, G_io_apdu_buffer, 0, result);
-		tx = cx_ecdsa_sign((void*) &N_privateKey, CX_RND_RFC6979 | CX_LAST, CX_SHA256, result, sizeof(result), G_io_apdu_buffer);
+		tx = cx_ecdsa_sign((void*) &privateKey, CX_RND_RFC6979 | CX_LAST, CX_SHA256, result, sizeof(result), G_io_apdu_buffer);
 		// G_io_apdu_buffer[0] &= 0xF0; // discard the parity information
 		hashTainted = 1;
 		raw_tx_ix = 0;
