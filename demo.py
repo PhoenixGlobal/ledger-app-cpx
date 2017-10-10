@@ -19,8 +19,9 @@ from ledgerblue.comm import getDongle
 from ledgerblue.commException import CommException
 from secp256k1 import PublicKey
 
-bipp44_path = ("80000378"
-              +"8000002C"
+bipp44_path = (
+               "8000002C"
+              +"80000378"
               +"80000000"
               +"00000000"
               +"00000000")
@@ -44,7 +45,7 @@ textToSign_03 = bytes(("0200048d121f4bc2bf104e547e85d680780fe629c2b3ce89ac73e0ff
 textToSignArray = [textToSign_00,textToSign_01,textToSign_02, textToSign_03]
 
 dongle = getDongle(True)
-publicKey = dongle.exchange(bytes(("8004000000"+ bipp44_path + "000000000000").decode('hex')))
+publicKey = dongle.exchange(bytes(("80040000FF"+ bipp44_path).decode('hex')))
 print "publicKey " + str(publicKey).encode('hex')
 
 for textToSign in textToSignArray:

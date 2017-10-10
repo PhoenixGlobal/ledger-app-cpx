@@ -25,6 +25,9 @@
 /** length of BIP44 path */
 #define BIP44_PATH_LEN 5
 
+/** length of BIP44 path, in bytes */
+#define  BIP44_BYTE_LENGTH (BIP44_PATH_LEN * sizeof(unsigned int))
+
 /**
  * Nano S has 320 KB flash, 10 KB RAM, uses a ST31H320 chip.
  * This effectively limits the max size

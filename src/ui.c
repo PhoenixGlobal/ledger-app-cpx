@@ -338,26 +338,51 @@ const bagl_element_t*io_seproxyhal_touch_approve(const bagl_element_t *e) {
 
 		/** BIP44 path, used to derive the private key from the mnemonic by calling os_perso_derive_node_bip32. */
 		unsigned int bip44_path[BIP44_PATH_LEN];
-		//TODO: figure out why I can't read from the G_io_apdu_buffer as set in demo.py.
-//							bip44_path[0] = *bip44_in;
-		bip44_path[0] = 44 	| 0x80000000;
-//							bip44_in++;
+		uint32_t i;
+		for (i = 0; i < BIP44_PATH_LEN; i++) {
+			bip44_path[i] = (bip44_in[0] << 24) | (bip44_in[1] << 16) | (bip44_in[2] << 8) | (bip44_in[3]);
+			bip44_in += 4;
+		}
 
-//							bip44_path[1] = *bip44_in;
-		bip44_path[1] = 888	| 0x80000000;
-//							bip44_in++;
+		// TODO: remove after debugging vvvvvv
+		unsigned int test_bip44_path[BIP44_PATH_LEN];
+		test_bip44_path[0] = (44 | 0x80000000);
+		test_bip44_path[1] = (888 | 0x80000000);
+		test_bip44_path[2] = (0 | 0x80000000);
+		test_bip44_path[3] = 0;
+		test_bip44_path[4] = 0;
 
-//							bip44_path[2] = *bip44_in;
-		bip44_path[2] = 0	| 0x80000000;
-//							bip44_in++;
+		if (bip44_path[0] != test_bip44_path[0]) {
+			os_memmove(G_io_apdu_buffer, bip44_path, BIP44_BYTE_LENGTH);
+			os_memmove(G_io_apdu_buffer + BIP44_BYTE_LENGTH, test_bip44_path, BIP44_BYTE_LENGTH);
+			tx = BIP44_BYTE_LENGTH * 2;
+			THROW(0x6D15);
+		}
+		if (bip44_path[1] != test_bip44_path[1]) {
+			os_memmove(G_io_apdu_buffer, bip44_path, BIP44_BYTE_LENGTH);
+			tx = BIP44_BYTE_LENGTH;
+			THROW(0x6D16);
+		}
+		if (bip44_path[2] != test_bip44_path[2]) {
+			os_memmove(G_io_apdu_buffer, bip44_path, BIP44_BYTE_LENGTH);
+			os_memmove(G_io_apdu_buffer + BIP44_BYTE_LENGTH, test_bip44_path, BIP44_BYTE_LENGTH);
+			tx = BIP44_BYTE_LENGTH * 2;
+			THROW(0x6D17);
+		}
+		if (bip44_path[3] != test_bip44_path[3]) {
+			os_memmove(G_io_apdu_buffer, bip44_path, BIP44_BYTE_LENGTH);
+			os_memmove(G_io_apdu_buffer + BIP44_BYTE_LENGTH, test_bip44_path, BIP44_BYTE_LENGTH);
+			tx = BIP44_BYTE_LENGTH * 2;
+			THROW(0x6D18);
+		}
+		if (bip44_path[4] != test_bip44_path[4]) {
+			os_memmove(G_io_apdu_buffer, bip44_path, BIP44_BYTE_LENGTH);
+			os_memmove(G_io_apdu_buffer + BIP44_BYTE_LENGTH, test_bip44_path, BIP44_BYTE_LENGTH);
+			tx = BIP44_BYTE_LENGTH * 2;
+			THROW(0x6D19);
+		}
+		// TODO: remove after debugging ^^^^^^
 
-//							bip44_path[3] = *bip44_in;
-		bip44_path[3] = 0;
-//							bip44_in++;
-
-//							bip44_path[4] = *bip44_in;
-		bip44_path[4] = 0;
-//							bip44_in++;
 		unsigned char privateKeyData[32];
 		os_perso_derive_node_bip32(CX_CURVE_256R1, bip44_path, BIP44_PATH_LEN, privateKeyData, NULL);
 

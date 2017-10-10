@@ -123,7 +123,7 @@ static void neo_main(void) {
 							unsigned int len = get_apdu_buffer_length();
 							unsigned char * in = G_io_apdu_buffer + APDU_HEADER_LENGTH;
 							unsigned char * out = raw_tx + raw_tx_ix;
-							if(raw_tx_ix + len > MAX_TX_RAW_LENGTH) {
+							if (raw_tx_ix + len > MAX_TX_RAW_LENGTH) {
 								THROW(0x6D08);
 							}
 							os_memmove(out, in, len);
@@ -162,31 +162,19 @@ static void neo_main(void) {
 							cx_ecfp_public_key_t publicKey;
 							cx_ecfp_private_key_t privateKey;
 
+							if (rx < APDU_HEADER_LENGTH + BIP44_BYTE_LENGTH) {
+								THROW(0x6D09);
+							}
+
 							/** BIP44 path, used to derive the private key from the mnemonic by calling os_perso_derive_node_bip32. */
-							unsigned char * in = G_io_apdu_buffer + APDU_HEADER_LENGTH;
-							unsigned int * bip44_in = (unsigned int *)in;
-//TODO: figure out why I can't read from the G_io_apdu_buffer as set in demo.py.
+							unsigned char * bip44_in = G_io_apdu_buffer + APDU_HEADER_LENGTH;
+
 							unsigned int bip44_path[BIP44_PATH_LEN];
-//							bip44_path[0] = *bip44_in;
-							bip44_path[0] = 44 	| 0x80000000;
-//							bip44_in++;
-
-//							bip44_path[1] = *bip44_in;
-							bip44_path[1] = 888	| 0x80000000;
-//							bip44_in++;
-
-//							bip44_path[2] = *bip44_in;
-							bip44_path[2] = 0	| 0x80000000;
-//							bip44_in++;
-
-//							bip44_path[3] = *bip44_in;
-							bip44_path[3] = 0;
-//							bip44_in++;
-
-//							bip44_path[4] = *bip44_in;
-							bip44_path[4] = 0;
-//							bip44_in++;
-
+							uint32_t i;
+							for (i = 0; i < BIP44_PATH_LEN; i++) {
+								bip44_path[i] = (bip44_in[0] << 24) | (bip44_in[1] << 16) | (bip44_in[2] << 8) | (bip44_in[3]);
+								bip44_in += 4;
+							}
 							unsigned char privateKeyData[32];
 							os_perso_derive_node_bip32(CX_CURVE_256R1, bip44_path, BIP44_PATH_LEN, privateKeyData, NULL);
 							cx_ecdsa_init_private_key(CX_CURVE_256R1, privateKeyData, 32, &privateKey);

@@ -23,5 +23,3 @@ pip install secp256k1
 See [Ledger's documentation](http://ledger.readthedocs.io) to get started.
 =======
 # blue-app-neo
-
-publicKey 04991d28c31abfc7024e416008b61d291a65270e02ec460364a36692f6e9d795fa4d8ac73bf4523055f51a7d1644d6875b5f8b61c3586ed9488c47a6675e484af7
