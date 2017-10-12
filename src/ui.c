@@ -328,13 +328,19 @@ static void tx_desc_dn(void) {
 /** processes the transaction approval. the UI is only displayed when all of the TX has been sent over for signing. */
 const bagl_element_t*io_seproxyhal_touch_approve(const bagl_element_t *e) {
 	unsigned int tx = 0;
-	unsigned int len = get_apdu_buffer_length();
 	unsigned char * in = G_io_apdu_buffer + APDU_HEADER_LENGTH;
 
-	// Update the hash
-	cx_hash(&hash.header, 0, in, len, NULL);
+	if (G_io_apdu_buffer[2] == P1_MORE) {
+		// Update the hash
+		unsigned int len = get_apdu_buffer_length();
+		cx_hash(&hash.header, 0, in, len, NULL);
+	}
 	if (G_io_apdu_buffer[2] == P1_LAST) {
-		unsigned char * bip44_in = G_io_apdu_buffer + ((APDU_HEADER_LENGTH + len) - BIP44_BYTE_LENGTH);
+		unsigned int len = get_apdu_buffer_length() - BIP44_BYTE_LENGTH;
+		// Update and sign the hash
+		cx_hash(&hash.header, 0, in, len, NULL);
+
+		unsigned char * bip44_in = G_io_apdu_buffer + ((APDU_HEADER_LENGTH + len));
 
 		/** BIP44 path, used to derive the private key from the mnemonic by calling os_perso_derive_node_bip32. */
 		unsigned int bip44_path[BIP44_PATH_LEN];
