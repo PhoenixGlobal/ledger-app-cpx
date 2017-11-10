@@ -23,6 +23,42 @@
 #include "neo.h"
 #include "bagl.h"
 
+#define MAX_EXIT_TIMER 4098
+
+#define EXIT_TIMER_REFRESH_INTERVAL 512
+
+static void Timer_UpdateDescription() {
+	snprintf(timer_desc, MAX_TIMER_TEXT_WIDTH, "%d", exit_timer / EXIT_TIMER_REFRESH_INTERVAL);
+}
+
+static void Timer_UpdateDisplay() {
+	if ((exit_timer % EXIT_TIMER_REFRESH_INTERVAL) == (EXIT_TIMER_REFRESH_INTERVAL / 2)) {
+		UX_REDISPLAY();
+	}
+}
+
+static void Timer_Tick() {
+	if (exit_timer > 0) {
+		exit_timer--;
+		Timer_UpdateDescription();
+	}
+}
+
+static void Timer_Set() {
+	exit_timer = MAX_EXIT_TIMER;
+	Timer_UpdateDescription();
+}
+
+static void Timer_Restart() {
+	if(exit_timer != MAX_EXIT_TIMER) {
+		Timer_Set();
+	}
+}
+
+static bool Timer_Expired() {
+	return exit_timer <= 0;
+}
+
 /** IO buffer to communicate with the outside world. */
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
@@ -106,6 +142,7 @@ static void neo_main(void) {
 
 						// we're getting a transaction to sign, in parts.
 						case INS_SIGN: {
+							Timer_Restart();
 							// check the third byte (0x02) for the instruction subtype.
 							if ((G_io_apdu_buffer[2] != P1_MORE) && (G_io_apdu_buffer[2] != P1_LAST)) {
 								THROW(0x6A86);
@@ -159,6 +196,8 @@ static void neo_main(void) {
 
 							// we're asked for the public key.
 						case INS_GET_PUBLIC_KEY: {
+							Timer_Restart();
+
 							cx_ecfp_public_key_t publicKey;
 							cx_ecfp_private_key_t privateKey;
 
@@ -234,20 +273,23 @@ void io_seproxyhal_display(const bagl_element_t *element) {
 
 /* io event loop */
 unsigned char io_event(unsigned char channel) {
-// nothing done with the event, throw an error on the transport layer if
-// needed
+	// nothing done with the event, throw an error on the transport layer if
+	// needed
 
-// can't have more than one tag in the reply, not supported yet.
+	// can't have more than one tag in the reply, not supported yet.
 	switch (G_io_seproxyhal_spi_buffer[0]) {
 	case SEPROXYHAL_TAG_FINGER_EVENT:
+		Timer_Restart();
 		UX_FINGER_EVENT(G_io_seproxyhal_spi_buffer);
 		break;
 
 	case SEPROXYHAL_TAG_BUTTON_PUSH_EVENT: // for Nano S
+		Timer_Restart();
 		UX_BUTTON_PUSH_EVENT(G_io_seproxyhal_spi_buffer);
 		break;
 
 	case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
+		Timer_Restart();
 		if (UX_DISPLAYED()) {
 			// perform actions after all screen elements have been displayed
 		} else {
@@ -256,26 +298,33 @@ unsigned char io_event(unsigned char channel) {
 		break;
 
 	case SEPROXYHAL_TAG_TICKER_EVENT:
-		UX_REDISPLAY();
+//		UX_REDISPLAY();
+		Timer_Tick();
+		if (Timer_Expired()) {
+			os_sched_exit(0);
+		} else {
+			Timer_UpdateDisplay();
+		}
 		break;
 
 		// unknown events are acknowledged
 	default:
+		UX_DEFAULT_EVENT();
 		break;
 	}
 
-// close the event if not done previously (by a display or whatever)
+	// close the event if not done previously (by a display or whatever)
 	if (!io_seproxyhal_spi_is_status_sent()) {
 		io_seproxyhal_general_status();
 	}
 
-// command has been processed, DO NOT reset the current APDU transport
+	// command has been processed, DO NOT reset the current APDU transport
 	return 1;
 }
 
 /** boot up the app and intialize it */
 __attribute__((section(".boot"))) int main(void) {
-// exit critical section
+	// exit critical section
 	__asm volatile("cpsie i");
 
 	curr_scr_ix = 0;
@@ -284,7 +333,7 @@ __attribute__((section(".boot"))) int main(void) {
 	hashTainted = 1;
 	uiState = UI_IDLE;
 
-// ensure exception will work as planned
+	// ensure exception will work as planned
 	os_boot();
 
 	UX_INIT();
@@ -295,11 +344,23 @@ __attribute__((section(".boot"))) int main(void) {
 				{
 					io_seproxyhal_init();
 
+#ifdef LISTEN_BLE
+					if (os_seph_features() &
+							SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_BLE) {
+						BLE_power(0, NULL);
+						// restart IOs
+						BLE_power(1, NULL);
+					}
+#endif
+
 					USB_power(0);
 					USB_power(1);
 
 					// show idle screen.
 					ui_idle();
+
+					// set timer
+					Timer_Set();
 
 					// run main event loop.
 					neo_main();

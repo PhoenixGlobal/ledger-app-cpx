@@ -642,6 +642,7 @@ unsigned char display_tx_desc() {
 
 		// asset_id and value screen
 		if (scr_ix < MAX_TX_TEXT_SCREENS) {
+			os_memset(tx_desc[scr_ix], '\0', CURR_TX_DESC_LEN);
 			// asset id
 			if (is_asset_id(asset_id, NEO_ASSET_ID)) {
 				os_memmove(tx_desc[scr_ix][0], TXT_ASSET_NEO, sizeof(TXT_ASSET_NEO));
@@ -686,6 +687,7 @@ unsigned char display_tx_desc() {
 
 		// address screen
 		if (scr_ix < MAX_TX_TEXT_SCREENS) {
+			os_memset(tx_desc[scr_ix], '\0', CURR_TX_DESC_LEN);
 			os_memmove(tx_desc[scr_ix][0], address_base58_0, address_base58_len_0);
 			os_memmove(tx_desc[scr_ix][1], address_base58_1, address_base58_len_1);
 			os_memmove(tx_desc[scr_ix][2], address_base58_2, address_base58_len_2);
