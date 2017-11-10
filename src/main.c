@@ -234,10 +234,10 @@ void io_seproxyhal_display(const bagl_element_t *element) {
 
 /* io event loop */
 unsigned char io_event(unsigned char channel) {
-// nothing done with the event, throw an error on the transport layer if
-// needed
+	// nothing done with the event, throw an error on the transport layer if
+	// needed
 
-// can't have more than one tag in the reply, not supported yet.
+	// can't have more than one tag in the reply, not supported yet.
 	switch (G_io_seproxyhal_spi_buffer[0]) {
 	case SEPROXYHAL_TAG_FINGER_EVENT:
 		UX_FINGER_EVENT(G_io_seproxyhal_spi_buffer);
@@ -256,7 +256,7 @@ unsigned char io_event(unsigned char channel) {
 		break;
 
 	case SEPROXYHAL_TAG_TICKER_EVENT:
-		UX_REDISPLAY();
+//		UX_REDISPLAY();
 		break;
 
 		// unknown events are acknowledged
@@ -264,18 +264,18 @@ unsigned char io_event(unsigned char channel) {
 		break;
 	}
 
-// close the event if not done previously (by a display or whatever)
+	// close the event if not done previously (by a display or whatever)
 	if (!io_seproxyhal_spi_is_status_sent()) {
 		io_seproxyhal_general_status();
 	}
 
-// command has been processed, DO NOT reset the current APDU transport
+	// command has been processed, DO NOT reset the current APDU transport
 	return 1;
 }
 
 /** boot up the app and intialize it */
 __attribute__((section(".boot"))) int main(void) {
-// exit critical section
+	// exit critical section
 	__asm volatile("cpsie i");
 
 	curr_scr_ix = 0;
@@ -284,7 +284,7 @@ __attribute__((section(".boot"))) int main(void) {
 	hashTainted = 1;
 	uiState = UI_IDLE;
 
-// ensure exception will work as planned
+	// ensure exception will work as planned
 	os_boot();
 
 	UX_INIT();
@@ -294,6 +294,15 @@ __attribute__((section(".boot"))) int main(void) {
 			TRY
 				{
 					io_seproxyhal_init();
+
+#ifdef LISTEN_BLE
+					if (os_seph_features() &
+							SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_BLE) {
+						BLE_power(0, NULL);
+						// restart IOs
+						BLE_power(1, NULL);
+					}
+#endif
 
 					USB_power(0);
 					USB_power(1);

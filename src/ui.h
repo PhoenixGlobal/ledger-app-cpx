@@ -56,7 +56,7 @@
 
 /** UI currently displayed */
 enum UI_STATE {
-	UI_IDLE, UI_TOP_SIGN, UI_TX_DESC, UI_SIGN, UI_DENY
+	UI_INIT, UI_IDLE, UI_TOP_SIGN, UI_TX_DESC, UI_SIGN, UI_DENY
 };
 
 /** UI state enum */
