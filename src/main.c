@@ -289,7 +289,7 @@ unsigned char io_event(unsigned char channel) {
 		break;
 
 	case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
-		Timer_Restart();
+		//Timer_Restart();
 		if (UX_DISPLAYED()) {
 			// perform actions after all screen elements have been displayed
 		} else {
