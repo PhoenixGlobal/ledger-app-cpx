@@ -22,8 +22,8 @@ include $(BOLOS_SDK)/Makefile.defines
 
 # Main app configuration
 
-APPNAME = ".NEO."
-APPVERSION = 1.0.0
+APPNAME = "NEO"
+APPVERSION = 1.1.0
 APP_LOAD_PARAMS = --path "44'/888'" --appFlags 0x40 --apdu $(COMMON_LOAD_PARAMS)
 APP_DELETE_PARAMS =  --apdu $(COMMON_DELETE_PARAMS)
 
