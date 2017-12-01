@@ -10,6 +10,15 @@
 #include "os_io_seproxyhal.h"
 #include "bagl.h"
 
+/** the timer */
+extern int exit_timer;
+
+/** max with of timer display */
+#define MAX_TIMER_TEXT_WIDTH 4
+
+/** display for the timer */
+extern char timer_desc[MAX_TIMER_TEXT_WIDTH];
+
 /** length of the APDU (application protocol data unit) header. */
 #define APDU_HEADER_LENGTH 5
 
@@ -56,7 +65,7 @@
 
 /** UI currently displayed */
 enum UI_STATE {
-	UI_IDLE, UI_TOP_SIGN, UI_TX_DESC, UI_SIGN, UI_DENY
+	UI_INIT, UI_IDLE, UI_TOP_SIGN, UI_TX_DESC, UI_SIGN, UI_DENY
 };
 
 /** UI state enum */
