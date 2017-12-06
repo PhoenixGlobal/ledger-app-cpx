@@ -96,6 +96,7 @@ unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
 		}
 
 	default:
+		hashTainted = 1;
 		THROW(INVALID_PARAMETER);
 	}
 	return 0;
@@ -129,11 +130,13 @@ static void neo_main(void) {
 						// no apdu received, well, reset the session, and reset the
 						// bootloader configuration
 						if (rx == 0) {
+							hashTainted = 1;
 							THROW(0x6982);
 						}
 
 						// if the buffer doesn't start with the magic byte, return an error.
 						if (G_io_apdu_buffer[0] != CLA) {
+							hashTainted = 1;
 							THROW(0x6E00);
 						}
 
@@ -145,6 +148,7 @@ static void neo_main(void) {
 							Timer_Restart();
 							// check the third byte (0x02) for the instruction subtype.
 							if ((G_io_apdu_buffer[2] != P1_MORE) && (G_io_apdu_buffer[2] != P1_LAST)) {
+								hashTainted = 1;
 								THROW(0x6A86);
 							}
 
@@ -161,6 +165,7 @@ static void neo_main(void) {
 							unsigned char * in = G_io_apdu_buffer + APDU_HEADER_LENGTH;
 							unsigned char * out = raw_tx + raw_tx_ix;
 							if (raw_tx_ix + len > MAX_TX_RAW_LENGTH) {
+								hashTainted = 1;
 								THROW(0x6D08);
 							}
 							os_memmove(out, in, len);
@@ -202,6 +207,7 @@ static void neo_main(void) {
 							cx_ecfp_private_key_t privateKey;
 
 							if (rx < APDU_HEADER_LENGTH + BIP44_BYTE_LENGTH) {
+								hashTainted = 1;
 								THROW(0x6D09);
 							}
 
@@ -236,6 +242,7 @@ static void neo_main(void) {
 							// we're asked to do an unknown command
 						default:
 							// return an error.
+							hashTainted = 1;
 							THROW(0x6D00);
 							break;
 						}
