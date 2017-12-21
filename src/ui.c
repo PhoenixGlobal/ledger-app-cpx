@@ -447,10 +447,11 @@ const bagl_element_t*io_seproxyhal_touch_approve(const bagl_element_t *e) {
 	unsigned int tx = 0;
 
 	if (G_io_apdu_buffer[2] == P1_LAST) {
+		unsigned int raw_tx_len_except_bip44 = raw_tx_len - BIP44_BYTE_LENGTH;
 		// Update and sign the hash
-		cx_hash(&hash.header, 0, raw_tx, raw_tx_len, NULL);
+		cx_hash(&hash.header, 0, raw_tx, raw_tx_len_except_bip44, NULL);
 
-		unsigned char * bip44_in = raw_tx + (raw_tx_len - BIP44_BYTE_LENGTH);
+		unsigned char * bip44_in = raw_tx + raw_tx_len_except_bip44;
 
 		/** BIP44 path, used to derive the private key from the mnemonic by calling os_perso_derive_node_bip32. */
 		unsigned int bip44_path[BIP44_PATH_LEN];
