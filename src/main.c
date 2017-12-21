@@ -225,6 +225,7 @@ static void neo_main(void) {
 							cx_ecdsa_init_private_key(CX_CURVE_256R1, privateKeyData, 32, &privateKey);
 
 							// generate the public key.
+							cx_ecdsa_init_public_key(CX_CURVE_256R1, NULL, 0, &publicKey);
 							cx_ecfp_generate_pair(CX_CURVE_256R1, &publicKey, &privateKey, 1);
 
 							// push the public key onto the response buffer.
