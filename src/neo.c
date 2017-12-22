@@ -245,6 +245,7 @@ static unsigned int encode_base_x(const char * alphabet, unsigned int alphabet_l
 	unsigned char startAt;
 	unsigned char zeroCount = 0;
 	if (in_length > sizeof(tmp)) {
+		hashTainted = 1;
 		THROW(INVALID_PARAMETER);
 	}
 	os_memmove(tmp, in, in_length);
@@ -373,6 +374,7 @@ static unsigned int min(unsigned int i0, unsigned int i1) {
 static void skip_raw_tx(unsigned int tx_skip) {
 	raw_tx_ix += tx_skip;
 	if (raw_tx_ix >= raw_tx_len) {
+		hashTainted = 1;
 		THROW(0x6D03);
 	}
 }
@@ -387,6 +389,7 @@ static unsigned char next_raw_tx_varbytes_num() {
 	case 0xFD:
 	case 0xFE:
 	case 0xFF:
+		hashTainted = 1;
 		THROW(0x6D04);
 		break;
 	default:
@@ -409,6 +412,7 @@ static unsigned char next_raw_tx() {
 		raw_tx_ix += 1;
 		return retval;
 	} else {
+		hashTainted = 1;
 		THROW(0x6D05);
 		return 0;
 	}
@@ -459,6 +463,7 @@ unsigned char display_tx_desc() {
 				break;
 
 			default:
+				hashTainted = 1;
 				THROW(0x6D06);
 
 			}
@@ -512,7 +517,15 @@ unsigned char display_tx_desc() {
 		skip_raw_tx(num_coin_claims * COIN_REFERENCES_LEN);
 	}
 		break;
-
+	case TX_INVOKE: {
+		unsigned char script_len = next_raw_tx_varbytes_num();
+		skip_raw_tx(script_len);
+		if(version >= 1) {
+			//UInt64.SIZE = 8
+			skip_raw_tx(8);
+		}
+	}
+		break;
 	default:
 		break;
 	}
@@ -576,6 +589,7 @@ unsigned char display_tx_desc() {
 			break;
 
 		default:
+			hashTainted = 1;
 			THROW(0x6D07);
 		}
 	}

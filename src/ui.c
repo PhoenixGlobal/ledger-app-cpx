@@ -250,8 +250,7 @@ static const bagl_element_t bagl_ui_deny_nanos[] = {
 	{	{	BAGL_LABELINE, 0x02, 0, 20, 128, 11, 0, 0, 0, 0xFFFFFF, 0x000000, DEFAULT_FONT, 0 }, "Deny Tx", 0, 0, 0, NULL, NULL, NULL, },
 	/* left icon is up arrow  */
 	{	{	BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_UP }, NULL, 0, 0, 0, NULL, NULL, NULL, },
-	/* left icon is up arrow  */
-	{	{	BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_DOWN }, NULL, 0, 0, 0, NULL, NULL, NULL, },
+	{	{	BAGL_ICON, 0x00, 117, 13, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_DOWN }, NULL, 0, 0, 0, NULL, NULL, NULL, },
 /* */
 };
 
@@ -400,6 +399,7 @@ static const bagl_element_t * tx_desc_up(const bagl_element_t *e) {
 		break;
 
 	default:
+		hashTainted = 1;
 		THROW(0x6D02);
 		break;
 	}
@@ -434,6 +434,7 @@ static const bagl_element_t * tx_desc_dn(const bagl_element_t *e) {
 		break;
 
 	default:
+		hashTainted = 1;
 		THROW(0x6D01);
 		break;
 	}
@@ -443,19 +444,13 @@ static const bagl_element_t * tx_desc_dn(const bagl_element_t *e) {
 /** processes the transaction approval. the UI is only displayed when all of the TX has been sent over for signing. */
 const bagl_element_t*io_seproxyhal_touch_approve(const bagl_element_t *e) {
 	unsigned int tx = 0;
-	unsigned char * in = G_io_apdu_buffer + APDU_HEADER_LENGTH;
 
-	if (G_io_apdu_buffer[2] == P1_MORE) {
-		// Update the hash
-		unsigned int len = get_apdu_buffer_length();
-		cx_hash(&hash.header, 0, in, len, NULL);
-	}
 	if (G_io_apdu_buffer[2] == P1_LAST) {
-		unsigned int len = get_apdu_buffer_length() - BIP44_BYTE_LENGTH;
+		unsigned int raw_tx_len_except_bip44 = raw_tx_len - BIP44_BYTE_LENGTH;
 		// Update and sign the hash
-		cx_hash(&hash.header, 0, in, len, NULL);
+		cx_hash(&hash.header, 0, raw_tx, raw_tx_len_except_bip44, NULL);
 
-		unsigned char * bip44_in = G_io_apdu_buffer + ((APDU_HEADER_LENGTH + len));
+		unsigned char * bip44_in = raw_tx + raw_tx_len_except_bip44;
 
 		/** BIP44 path, used to derive the private key from the mnemonic by calling os_perso_derive_node_bip32. */
 		unsigned int bip44_path[BIP44_PATH_LEN];

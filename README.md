@@ -20,6 +20,9 @@ Note that in order to run `demo.py`, you must install the `secp256k1` Python pac
 pip install secp256k1
 ```
 
+See [The Environment Setup Guide](https://coranos.github.io/neo/ledger-nano-s/development/environment.html) if you want to build the appyourself..
+========
+
 See [Ledger's documentation](http://ledger.readthedocs.io) to get started.
 =======
 # blue-app-neo
