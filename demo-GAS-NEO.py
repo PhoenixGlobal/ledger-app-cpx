@@ -43,7 +43,10 @@ textToSignArray = [textToSign_00,textToSign_01,textToSign_02]
 
 dongle = getDongle(True)
 publicKey = dongle.exchange(bytes(("80040000FF"+ bipp44_path).decode('hex')))
-print "publicKey " + str(publicKey).encode('hex')
+print "publicKey       " + str(publicKey).encode('hex')
+
+signedPublicKey = dongle.exchange(bytes(("80080000FF"+ bipp44_path).decode('hex')))
+print "signedPublicKey " + str(signedPublicKey).encode('hex')
 
 for textToSign in textToSignArray:
 	try:
