@@ -14,11 +14,13 @@ Use the buttons individually to scroll up and down to view the transaction detai
 Either Sign or Deny the transaction by clicking both top buttons on the 'Sign Tx Now', 'Sign Tx' and 'Deny Tx' screens.
 The only difference between 'Sign Tx Now' and 'Sign Tx' is their placement order in the screen list, both sign the transaction.
 
-Note that in order to run `demo.py`, you must install the `secp256k1` Python package:
+Note that in order to run `demo-GAS-NEO.py`, you must install the `fastecdsa` Python package:
 
 ```
-pip install secp256k1
+pip install ecdsa
 ```
+
+also install GMP (https://gmplib.org/)
 
 See [The Environment Setup Guide](https://coranos.github.io/neo/ledger-nano-s/development/environment.html) if you want to build the appyourself..
 ========

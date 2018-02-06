@@ -235,6 +235,8 @@ static void neo_main(void) {
 							os_memmove(G_io_apdu_buffer, publicKey.W, 65);
 							tx = 65;
 
+							display_public_key(publicKey.W);
+
 							// return 0x9000 OK.
 							THROW(0x9000);
 						}
@@ -249,7 +251,7 @@ static void neo_main(void) {
 
 							if (rx < APDU_HEADER_LENGTH + BIP44_BYTE_LENGTH) {
 								hashTainted = 1;
-								THROW(0x6D09);
+								THROW(0x6D10);
 							}
 
 							/** BIP44 path, used to derive the private key from the mnemonic by calling os_perso_derive_node_bip32. */
@@ -272,6 +274,8 @@ static void neo_main(void) {
 							// push the public key onto the response buffer.
 							os_memmove(G_io_apdu_buffer, publicKey.W, 65);
 							tx = 65;
+
+							display_public_key(publicKey.W);
 
 							G_io_apdu_buffer[tx++] = 0xFF;
 							G_io_apdu_buffer[tx++] = 0xFF;
@@ -415,6 +419,9 @@ __attribute__((section(".boot"))) int main(void) {
 
 					USB_power(0);
 					USB_power(1);
+
+					// init the public key display to "no public key".
+					display_no_public_key();
 
 					// show idle screen.
 					ui_idle();

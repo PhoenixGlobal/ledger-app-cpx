@@ -65,7 +65,7 @@ extern char timer_desc[MAX_TIMER_TEXT_WIDTH];
 
 /** UI currently displayed */
 enum UI_STATE {
-	UI_INIT, UI_IDLE, UI_TOP_SIGN, UI_TX_DESC, UI_SIGN, UI_DENY
+	UI_INIT, UI_IDLE, UI_TOP_SIGN, UI_TX_DESC, UI_SIGN, UI_DENY, UI_PUBLIC_KEY
 };
 
 /** UI state enum */
@@ -100,6 +100,9 @@ extern char tx_desc[MAX_TX_TEXT_SCREENS][MAX_TX_TEXT_LINES][MAX_TX_TEXT_WIDTH];
 
 /** currently displayed text description. */
 extern char curr_tx_desc[MAX_TX_TEXT_LINES][MAX_TX_TEXT_WIDTH];
+
+/** currently displayed public key */
+extern char current_public_key[MAX_TX_TEXT_LINES][MAX_TX_TEXT_WIDTH];
 
 /** process a partial transaction */
 const bagl_element_t * io_seproxyhal_touch_approve(const bagl_element_t *e);
