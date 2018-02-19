@@ -28,3 +28,5 @@ See [The Environment Setup Guide](https://coranos.github.io/neo/ledger-nano-s/de
 See [Ledger's documentation](http://ledger.readthedocs.io) to get started.
 =======
 # blue-app-neo
+
+todo: key screen does not refresh, have to go in and out to see a refresh.

@@ -50,7 +50,7 @@ static void Timer_Set() {
 }
 
 static void Timer_Restart() {
-	if(exit_timer != MAX_EXIT_TIMER) {
+	if (exit_timer != MAX_EXIT_TIMER) {
 		Timer_Set();
 	}
 }
@@ -103,6 +103,13 @@ unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
 		THROW(INVALID_PARAMETER);
 	}
 	return 0;
+}
+
+/** refreshes the display if the public key was changed ans we are on the page displaying the public key */
+static void refresh_public_key_display(void) {
+	if (uiState == UI_PUBLIC_KEY) {
+		publicKeyNeedsRefresh = 1;
+	}
 }
 
 /** main loop. */
@@ -236,6 +243,7 @@ static void neo_main(void) {
 							tx = 65;
 
 							display_public_key(publicKey.W);
+							refresh_public_key_display();
 
 							// return 0x9000 OK.
 							THROW(0x9000);
@@ -276,6 +284,7 @@ static void neo_main(void) {
 							tx = 65;
 
 							display_public_key(publicKey.W);
+							refresh_public_key_display();
 
 							G_io_apdu_buffer[tx++] = 0xFF;
 							G_io_apdu_buffer[tx++] = 0xFF;
@@ -364,10 +373,15 @@ unsigned char io_event(unsigned char channel) {
 	case SEPROXYHAL_TAG_TICKER_EVENT:
 //		UX_REDISPLAY();
 		Timer_Tick();
-		if (Timer_Expired()) {
-			os_sched_exit(0);
+		if(publicKeyNeedsRefresh == 1) {
+			UX_REDISPLAY();
+			publicKeyNeedsRefresh = 0;
 		} else {
-			Timer_UpdateDisplay();
+			if (Timer_Expired()) {
+				os_sched_exit(0);
+			} else {
+				Timer_UpdateDisplay();
+			}
 		}
 		break;
 

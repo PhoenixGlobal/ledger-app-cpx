@@ -729,6 +729,7 @@ void display_no_public_key() {
 	os_memmove(current_public_key[2], TXT_BLANK, sizeof(TXT_BLANK));
 	os_memmove(current_public_key[0], NO_PUBLIC_KEY_0, sizeof(NO_PUBLIC_KEY_0));
 	os_memmove(current_public_key[1], NO_PUBLIC_KEY_1, sizeof(NO_PUBLIC_KEY_1));
+	publicKeyNeedsRefresh = 0;
 }
 
 void public_key_hash160(unsigned char * in, unsigned short inlen, unsigned char *out) {

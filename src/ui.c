@@ -27,6 +27,9 @@ ux_state_t ux;
 /** notification to restart the hash */
 unsigned char hashTainted;
 
+/** notification to refresh the view, if we are displaying the public key */
+unsigned char publicKeyNeedsRefresh;
+
 /** the hash. */
 cx_sha256_t hash;
 

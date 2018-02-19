@@ -77,6 +77,9 @@ extern ux_state_t ux;
 /** notification to restart the hash */
 extern unsigned char hashTainted;
 
+/** notification to refresh the view, if we are displaying the public key */
+extern unsigned char publicKeyNeedsRefresh;
+
 /** the hash. */
 extern cx_sha256_t hash;
 
