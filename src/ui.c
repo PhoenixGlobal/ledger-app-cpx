@@ -144,8 +144,8 @@ static const bagl_element_t bagl_ui_public_key_nanos[] = {
 		{	{	BAGL_LABELINE, 0x02, 10, 21, 108, 11, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000, TX_DESC_FONT, 0 }, current_public_key[1], 0, 0, 0, NULL, NULL, NULL, },
 		/* third line of description of current public key  */
 		{	{	BAGL_LABELINE, 0x02, 10, 32, 108, 11, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000, TX_DESC_FONT, 0 }, current_public_key[2], 0, 0, 0, NULL, NULL, NULL, },
-		/* left icon is a X */
-		{	{	BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_CROSS }, NULL, 0, 0, 0, NULL, NULL, NULL, },
+		/* right icon is a X */
+		{	{	BAGL_ICON, 0x00, 113, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_CROSS }, NULL, 0, 0, 0, NULL, NULL, NULL, },
 
 /* */
 };
@@ -157,7 +157,7 @@ static const bagl_element_t bagl_ui_public_key_nanos[] = {
  */
 static unsigned int bagl_ui_public_key_nanos_button(unsigned int button_mask, unsigned int button_mask_counter) {
 	switch (button_mask) {
-	case BUTTON_EVT_RELEASED | BUTTON_LEFT:
+	case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
 		ui_idle();
 		break;
 	}

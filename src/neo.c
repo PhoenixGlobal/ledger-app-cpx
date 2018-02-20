@@ -243,8 +243,8 @@ static unsigned int encode_base_58(const void *in, const unsigned int in_len, ch
 /** encodes in_length bytes from in into the given base, using the given alphabet. writes the converted bytes to out, stopping when it converts out_length bytes. */
 static unsigned int encode_base_x(const char * alphabet, const unsigned int alphabet_len, const void * in, const unsigned int in_length, char * out,
 		const unsigned int out_length) {
-	char tmp[164];
-	char buffer[164];
+	char tmp[64];
+	char buffer[128];
 	unsigned char buffer_ix;
 	unsigned char startAt;
 	unsigned char zeroCount = 0;
