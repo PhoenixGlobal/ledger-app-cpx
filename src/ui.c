@@ -516,7 +516,7 @@ const bagl_element_t*io_seproxyhal_touch_approve(const bagl_element_t *e) {
 		unsigned char result[32];
 
 		cx_hash(&hash.header, CX_LAST, G_io_apdu_buffer, 0, result);
-		tx = cx_ecdsa_sign((void*) &privateKey, CX_RND_RFC6979 | CX_LAST, CX_SHA256, result, sizeof(result), G_io_apdu_buffer);
+		tx = cx_ecdsa_sign((void*) &privateKey, CX_RND_RFC6979 | CX_LAST, CX_SHA256, result, sizeof(result), G_io_apdu_buffer, 0);
 		// G_io_apdu_buffer[0] &= 0xF0; // discard the parity information
 		hashTainted = 1;
 		raw_tx_ix = 0;
