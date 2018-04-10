@@ -193,6 +193,10 @@ static const char TX_PUBLISH_NM[] = "Publish Tx";
 /** Label when displaying a Invoke transaction */
 static const char TX_INVOKE_NM[] = "Invoke Tx";
 
+/** Label when a public key has not been set yet */
+static const char NO_PUBLIC_KEY_0[] = "No Public Key";
+static const char NO_PUBLIC_KEY_1[] = "Requested Yet";
+
 /** array of capital letter hex values */
 static const char HEX_CAP[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', };
 
@@ -227,32 +231,37 @@ static unsigned int encode_base_x(const char * alphabet, const unsigned int alph
 		const unsigned int out_length);
 
 /** encodes in_length bytes from in into base-10, writes the converted bytes to out, stopping when it converts out_length bytes.  */
-static unsigned int encode_base_10(const void *in, unsigned int in_length, char *out, unsigned int out_length) {
+static unsigned int encode_base_10(const void *in, const unsigned int in_length, char *out, const unsigned int out_length) {
 	return encode_base_x(BASE_10_ALPHABET, sizeof(BASE_10_ALPHABET), in, in_length, out, out_length);
 }
 
 /** encodes in_length bytes from in into base-58, writes the converted bytes to out, stopping when it converts out_length bytes.  */
-static unsigned int encode_base_58(const void *in, unsigned int length, char *out, unsigned int maxoutlen) {
-	return encode_base_x(BASE_58_ALPHABET, sizeof(BASE_58_ALPHABET), in, length, out, maxoutlen);
+static unsigned int encode_base_58(const void *in, const unsigned int in_len, char *out, const unsigned int out_len) {
+	return encode_base_x(BASE_58_ALPHABET, sizeof(BASE_58_ALPHABET), in, in_len, out, out_len);
 }
 
 /** encodes in_length bytes from in into the given base, using the given alphabet. writes the converted bytes to out, stopping when it converts out_length bytes. */
-static unsigned int encode_base_x(const char * alphabet, unsigned int alphabet_len, const void * in, unsigned int in_length, char * out,
-		unsigned int out_length) {
-	char tmp[164];
-	char buffer[164];
-	unsigned char j;
+static unsigned int encode_base_x(const char * alphabet, const unsigned int alphabet_len, const void * in, const unsigned int in_length, char * out,
+		const unsigned int out_length) {
+	char tmp[64];
+	char buffer[128];
+	unsigned char buffer_ix;
 	unsigned char startAt;
 	unsigned char zeroCount = 0;
 	if (in_length > sizeof(tmp)) {
 		hashTainted = 1;
-		THROW(INVALID_PARAMETER);
+		THROW(0x6D11);
 	}
 	os_memmove(tmp, in, in_length);
 	while ((zeroCount < in_length) && (tmp[zeroCount] == 0)) {
 		++zeroCount;
 	}
-	j = 2 * in_length;
+	buffer_ix = 2 * in_length;
+	if (buffer_ix > sizeof(buffer)) {
+		hashTainted = 1;
+		THROW(0x6D12);
+	}
+
 	startAt = zeroCount;
 	while (startAt < in_length) {
 		unsigned short remainder = 0;
@@ -266,23 +275,20 @@ static unsigned int encode_base_x(const char * alphabet, unsigned int alphabet_l
 		if (tmp[startAt] == 0) {
 			++startAt;
 		}
-		buffer[--j] = *(alphabet + remainder);
+		buffer[--buffer_ix] = *(alphabet + remainder);
 	}
-	while ((j < (2 * in_length)) && (buffer[j] == *(alphabet + 0))) {
-		++j;
+	while ((buffer_ix < (2 * in_length)) && (buffer[buffer_ix] == *(alphabet + 0))) {
+		++buffer_ix;
 	}
 	while (zeroCount-- > 0) {
-		buffer[--j] = *(alphabet + 0);
+		buffer[--buffer_ix] = *(alphabet + 0);
 	}
-	in_length = 2 * in_length - j;
-	if (out_length < in_length) {
-//		THROW(EXCEPTION_OVERFLOW);
-		os_memmove(out, (buffer + j), out_length);
-		return out_length;
-	} else {
-		os_memmove(out, (buffer + j), in_length);
-		return in_length;
+	const unsigned int true_out_length = (2 * in_length) - buffer_ix;
+	if (true_out_length > out_length) {
+		THROW(0x6D14);
 	}
+	os_memmove(out, (buffer + buffer_ix), true_out_length);
+	return true_out_length;
 }
 
 /** converts a value to base10 with a decimal point at DECIMAL_PLACE_OFFSET, which should be 100,000,000 or 100 million, thus the suffix 100m */
@@ -309,7 +315,7 @@ static void to_base10_100m(char * dest, const unsigned char * value, const unsig
 }
 
 /** converts a NEO scripthas to a NEO address by adding a checksum and encoding in base58 */
-static void to_address(char * dest, unsigned char * script_hash, unsigned int dest_len) {
+static void to_address(char * dest, unsigned int dest_len, const unsigned char * script_hash) {
 	static cx_sha256_t address_hash;
 	unsigned char address_hash_result_0[SHA256_HASH_LEN];
 	unsigned char address_hash_result_1[SHA256_HASH_LEN];
@@ -520,7 +526,7 @@ unsigned char display_tx_desc() {
 	case TX_INVOKE: {
 		unsigned char script_len = next_raw_tx_varbytes_num();
 		skip_raw_tx(script_len);
-		if(version >= 1) {
+		if (version >= 1) {
 			//UInt64.SIZE = 8
 			skip_raw_tx(8);
 		}
@@ -652,7 +658,7 @@ unsigned char display_tx_desc() {
 		next_raw_tx_arr(value, VALUE_LEN);
 		next_raw_tx_arr(script_hash, SCRIPT_HASH_LEN);
 
-		to_address(address_base58, script_hash, ADDRESS_BASE58_LEN);
+		to_address(address_base58, ADDRESS_BASE58_LEN, script_hash);
 
 		// asset_id and value screen
 		if (scr_ix < MAX_TX_TEXT_SCREENS) {
@@ -715,4 +721,66 @@ unsigned char display_tx_desc() {
 	os_memmove(curr_tx_desc, tx_desc[curr_scr_ix], CURR_TX_DESC_LEN);
 
 	return 1;
+}
+
+void display_no_public_key() {
+	os_memmove(current_public_key[0], TXT_BLANK, sizeof(TXT_BLANK));
+	os_memmove(current_public_key[1], TXT_BLANK, sizeof(TXT_BLANK));
+	os_memmove(current_public_key[2], TXT_BLANK, sizeof(TXT_BLANK));
+	os_memmove(current_public_key[0], NO_PUBLIC_KEY_0, sizeof(NO_PUBLIC_KEY_0));
+	os_memmove(current_public_key[1], NO_PUBLIC_KEY_1, sizeof(NO_PUBLIC_KEY_1));
+	publicKeyNeedsRefresh = 0;
+}
+
+void public_key_hash160(unsigned char * in, unsigned short inlen, unsigned char *out) {
+	union {
+		cx_sha256_t shasha;
+		cx_ripemd160_t riprip;
+	} u;
+	unsigned char buffer[32];
+
+	cx_sha256_init(&u.shasha);
+	cx_hash(&u.shasha.header, CX_LAST, in, inlen, buffer);
+	cx_ripemd160_init(&u.riprip);
+	cx_hash(&u.riprip.header, CX_LAST, buffer, 32, out);
+}
+
+void display_public_key(const unsigned char * public_key) {
+	os_memmove(current_public_key[0], TXT_BLANK, sizeof(TXT_BLANK));
+	os_memmove(current_public_key[1], TXT_BLANK, sizeof(TXT_BLANK));
+	os_memmove(current_public_key[2], TXT_BLANK, sizeof(TXT_BLANK));
+
+	// from https://github.com/CityOfZion/neon-js core.js
+	unsigned char public_key_encoded[33];
+	public_key_encoded[0] = ((public_key[64] & 1) ? 0x03 : 0x02);
+	os_memmove(public_key_encoded + 1, public_key + 1, 32);
+
+	unsigned char verification_script[35];
+	verification_script[0] = 0x21;
+	os_memmove(verification_script + 1, public_key_encoded, sizeof(public_key_encoded));
+	verification_script[sizeof(verification_script) - 1] = 0xAC;
+
+	unsigned char script_hash[SCRIPT_HASH_LEN];
+	for (int i = 0; i < SCRIPT_HASH_LEN; i++) {
+		script_hash[i] = 0x00;
+	}
+
+	public_key_hash160(verification_script, sizeof(verification_script), script_hash);
+	unsigned char script_hash_rev[SCRIPT_HASH_LEN];
+	for (int i = 0; i < SCRIPT_HASH_LEN; i++) {
+		script_hash_rev[i] = script_hash[SCRIPT_HASH_LEN - (i + 1)];
+	}
+
+	char address_base58[ADDRESS_BASE58_LEN];
+	unsigned int address_base58_len_0 = 11;
+	unsigned int address_base58_len_1 = 11;
+	unsigned int address_base58_len_2 = 12;
+	char * address_base58_0 = address_base58;
+	char * address_base58_1 = address_base58 + address_base58_len_0;
+	char * address_base58_2 = address_base58 + address_base58_len_0 + address_base58_len_1;
+	to_address(address_base58, ADDRESS_BASE58_LEN, script_hash);
+
+	os_memmove(current_public_key[0], address_base58_0, address_base58_len_0);
+	os_memmove(current_public_key[1], address_base58_1, address_base58_len_1);
+	os_memmove(current_public_key[2], address_base58_2, address_base58_len_2);
 }
