@@ -64,7 +64,8 @@ static const bagl_element_t * io_seproxyhal_touch_exit(const bagl_element_t *e);
 static const bagl_element_t * io_seproxyhal_touch_deny(const bagl_element_t *e);
 
 /** display part of the transaction description */
-static void ui_display_tx_desc(void);
+static void ui_display_tx_desc_1(void);
+static void ui_display_tx_desc_2(void);
 
 /** display the UI for signing a transaction */
 static void ui_sign(void);
@@ -73,7 +74,8 @@ static void ui_sign(void);
 static void ui_deny(void);
 
 /** show the public key screen */
-static void ui_public_key(void);
+static void ui_public_key_1(void);
+static void ui_public_key_2(void);
 
 /** move up in the transaction description list */
 static const bagl_element_t * tx_desc_up(const bagl_element_t *e);
@@ -120,7 +122,7 @@ static const bagl_element_t bagl_ui_idle_blue[] = {
 static unsigned int bagl_ui_idle_nanos_button(unsigned int button_mask, unsigned int button_mask_counter) {
 	switch (button_mask) {
 	case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
-		ui_public_key();
+		ui_public_key_1();
 		break;
 	case BUTTON_EVT_RELEASED | BUTTON_LEFT:
 		io_seproxyhal_touch_exit(NULL);
@@ -133,7 +135,7 @@ static unsigned int bagl_ui_idle_nanos_button(unsigned int button_mask, unsigned
 
 
 /** UI struct for the idle screen */
-static const bagl_element_t bagl_ui_public_key_nanos[] = {
+static const bagl_element_t bagl_ui_public_key_nanos_1[] = {
 // { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
 // text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
 // },
@@ -142,26 +144,67 @@ static const bagl_element_t bagl_ui_public_key_nanos[] = {
 		{	{	BAGL_LABELINE, 0x02, 10, 10, 108, 11, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000, TX_DESC_FONT, 0 }, current_public_key[0], 0, 0, 0, NULL, NULL, NULL, },
 		/* second line of description of current public key */
 		{	{	BAGL_LABELINE, 0x02, 10, 21, 108, 11, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000, TX_DESC_FONT, 0 }, current_public_key[1], 0, 0, 0, NULL, NULL, NULL, },
-		/* third line of description of current public key  */
-		{	{	BAGL_LABELINE, 0x02, 10, 32, 108, 11, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000, TX_DESC_FONT, 0 }, current_public_key[2], 0, 0, 0, NULL, NULL, NULL, },
 		/* right icon is a X */
 		{	{	BAGL_ICON, 0x00, 113, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_CROSS }, NULL, 0, 0, 0, NULL, NULL, NULL, },
+		/* left icon is down arrow  */
+		{	{	BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_DOWN }, NULL, 0, 0, 0, NULL, NULL, NULL, },
+/* */
+};
+
+
+/** UI struct for the idle screen */
+static const bagl_element_t bagl_ui_public_key_nanos_2[] = {
+// { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
+// text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
+// },
+		{	{	BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF, 0, 0 }, NULL, 0, 0, 0, NULL, NULL, NULL, },
+		/* second line of description of current public key */
+		{	{	BAGL_LABELINE, 0x02, 10, 10, 108, 11, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000, TX_DESC_FONT, 0 }, current_public_key[1], 0, 0, 0, NULL, NULL, NULL, },
+		/* third line of description of current public key  */
+		{	{	BAGL_LABELINE, 0x02, 10, 21, 108, 11, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000, TX_DESC_FONT, 0 }, current_public_key[2], 0, 0, 0, NULL, NULL, NULL, },
+		/* right icon is a X */
+		{	{	BAGL_ICON, 0x00, 113, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_CROSS }, NULL, 0, 0, 0, NULL, NULL, NULL, },
+		/* left icon is up arrow  */
+		{	{	BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_UP }, NULL, 0, 0, 0, NULL, NULL, NULL, },
 
 /* */
 };
+
 
 /**
  * buttons for the idle screen
  *
  * exit on Left button, or on Both buttons. Do nothing on Right button only.
  */
-static unsigned int bagl_ui_public_key_nanos_button(unsigned int button_mask, unsigned int button_mask_counter) {
+static unsigned int bagl_ui_public_key_nanos_1_button(unsigned int button_mask, unsigned int button_mask_counter) {
 	switch (button_mask) {
 	case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
 		ui_idle();
 		break;
+	case BUTTON_EVT_RELEASED | BUTTON_LEFT:
+		ui_public_key_2();
+		break;
 	}
 
+
+	return 0;
+}
+
+
+/**
+ * buttons for the idle screen
+ *
+ * exit on Left button, or on Both buttons. Do nothing on Right button only.
+ */
+static unsigned int bagl_ui_public_key_nanos_2_button(unsigned int button_mask, unsigned int button_mask_counter) {
+	switch (button_mask) {
+	case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
+		ui_idle();
+		break;
+	case BUTTON_EVT_RELEASED | BUTTON_LEFT:
+		ui_public_key_1();
+		break;
+	}
 	return 0;
 }
 
@@ -346,7 +389,7 @@ static unsigned int bagl_ui_deny_nanos_button(unsigned int button_mask, unsigned
 }
 
 /** UI struct for the transaction description screen, Nano S. */
-static const bagl_element_t bagl_ui_tx_desc_nanos[] = {
+static const bagl_element_t bagl_ui_tx_desc_nanos_1[] = {
 // { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
 // text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
 // },
@@ -357,6 +400,23 @@ static const bagl_element_t bagl_ui_tx_desc_nanos[] = {
 	{	{	BAGL_LABELINE, 0x02, 10, 21, 108, 11, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000, TX_DESC_FONT, 0 }, curr_tx_desc[1], 0, 0, 0, NULL, NULL, NULL, },
 	/* third line of description of current screen  */
 	{	{	BAGL_LABELINE, 0x02, 10, 32, 108, 11, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000, TX_DESC_FONT, 0 }, curr_tx_desc[2], 0, 0, 0, NULL, NULL, NULL, },
+	/* left icon is up arrow  */
+	{	{	BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_UP }, NULL, 0, 0, 0, NULL, NULL, NULL, },
+	/* right icon is down arrow */
+	{	{	BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_DOWN }, NULL, 0, 0, 0, NULL, NULL, NULL, },
+/* */
+};
+
+/** UI struct for the transaction description screen, Nano S. */
+static const bagl_element_t bagl_ui_tx_desc_nanos_2[] = {
+// { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
+// text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
+// },
+	{	{	BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF, 0, 0 }, NULL, 0, 0, 0, NULL, NULL, NULL, },
+	/* second line of description of current screen */
+	{	{	BAGL_LABELINE, 0x02, 10, 10, 108, 11, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000, TX_DESC_FONT, 0 }, curr_tx_desc[1], 0, 0, 0, NULL, NULL, NULL, },
+	/* third line of description of current screen  */
+	{	{	BAGL_LABELINE, 0x02, 10, 21, 108, 11, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000, TX_DESC_FONT, 0 }, curr_tx_desc[2], 0, 0, 0, NULL, NULL, NULL, },
 	/* left icon is up arrow  */
 	{	{	BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_UP }, NULL, 0, 0, 0, NULL, NULL, NULL, },
 	/* right icon is down arrow */
@@ -384,12 +444,31 @@ static const bagl_element_t bagl_ui_tx_desc_blue[] = {
 	{	{	BAGL_LABEL, 0x00, 0, 0, 60, 60, 0, 0, BAGL_FILL, 0x000000, 0XFFFFFF, DEFAULT_FONT_BLUE, 0},
 		timer_desc, 0, 0, 0, NULL, NULL, NULL,},
 };
+
 /**
  * buttons for the transaction description screen
  *
  * up on Left button, down on right button.
  */
-static unsigned int bagl_ui_tx_desc_nanos_button(unsigned int button_mask, unsigned int button_mask_counter) {
+static unsigned int bagl_ui_tx_desc_nanos_1_button(unsigned int button_mask, unsigned int button_mask_counter) {
+	switch (button_mask) {
+	case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
+		tx_desc_dn(NULL);
+		break;
+
+	case BUTTON_EVT_RELEASED | BUTTON_LEFT:
+		tx_desc_up(NULL);
+		break;
+	}
+	return 0;
+}
+
+/**
+ * buttons for the transaction description screen
+ *
+ * up on Left button, down on right button.
+ */
+static unsigned int bagl_ui_tx_desc_nanos_2_button(unsigned int button_mask, unsigned int button_mask_counter) {
 	switch (button_mask) {
 	case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
 		tx_desc_dn(NULL);
@@ -424,20 +503,24 @@ static const bagl_element_t * tx_desc_up(const bagl_element_t *e) {
 		ui_deny();
 		break;
 
-	case UI_TX_DESC:
+	case UI_TX_DESC_1:
 		if (curr_scr_ix == 0) {
 			ui_top_sign();
 		} else {
 			curr_scr_ix--;
 			copy_tx_desc();
-			ui_display_tx_desc();
+			ui_display_tx_desc_2();
 		}
+		break;
+
+	case UI_TX_DESC_2:
+		ui_display_tx_desc_1();
 		break;
 
 	case UI_SIGN:
 		curr_scr_ix = max_scr_ix - 1;
 		copy_tx_desc();
-		ui_display_tx_desc();
+		ui_display_tx_desc_1();
 		break;
 
 	case UI_DENY:
@@ -458,16 +541,20 @@ static const bagl_element_t * tx_desc_dn(const bagl_element_t *e) {
 	case UI_TOP_SIGN:
 		curr_scr_ix = 0;
 		copy_tx_desc();
-		ui_display_tx_desc();
+		ui_display_tx_desc_1();
 		break;
 
-	case UI_TX_DESC:
+	case UI_TX_DESC_1:
+		ui_display_tx_desc_2();
+		break;
+
+	case UI_TX_DESC_2:
 		if (curr_scr_ix == max_scr_ix - 1) {
 			ui_sign();
 		} else {
 			curr_scr_ix++;
 			copy_tx_desc();
-			ui_display_tx_desc();
+			ui_display_tx_desc_2();
 		}
 		break;
 
@@ -577,13 +664,24 @@ static unsigned int bagl_ui_deny_blue_button(unsigned int button_mask, unsigned 
 }
 
 /** show the public key screen */
-void ui_public_key(void) {
-	uiState = UI_PUBLIC_KEY;
+void ui_public_key_1(void) {
+	uiState = UI_PUBLIC_KEY_1;
 	if (os_seph_features() & SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_SCREEN_BIG) {
 		// TODO: add screen for the blue.
-		UX_DISPLAY(bagl_ui_public_key_nanos, NULL);
+		UX_DISPLAY(bagl_ui_public_key_nanos_1, NULL);
 	} else {
-		UX_DISPLAY(bagl_ui_public_key_nanos, NULL);
+		UX_DISPLAY(bagl_ui_public_key_nanos_1, NULL);
+	}
+}
+
+/** show the public key screen */
+void ui_public_key_2(void) {
+	uiState = UI_PUBLIC_KEY_2;
+	if (os_seph_features() & SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_SCREEN_BIG) {
+		// TODO: add screen for the blue.
+		UX_DISPLAY(bagl_ui_public_key_nanos_1, NULL);
+	} else {
+		UX_DISPLAY(bagl_ui_public_key_nanos_2, NULL);
 	}
 }
 
@@ -598,12 +696,23 @@ void ui_idle(void) {
 }
 
 /** show the transaction description screen. */
-static void ui_display_tx_desc(void) {
-	uiState = UI_TX_DESC;
+static void ui_display_tx_desc_1(void) {
+	uiState = UI_TX_DESC_1;
 	if (os_seph_features() & SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_SCREEN_BIG) {
 		UX_DISPLAY(bagl_ui_tx_desc_blue, NULL);
 	} else {
-		UX_DISPLAY(bagl_ui_tx_desc_nanos, NULL);
+		UX_DISPLAY(bagl_ui_tx_desc_nanos_1, NULL);
+	}
+}
+
+
+/** show the transaction description screen. */
+static void ui_display_tx_desc_2(void) {
+	uiState = UI_TX_DESC_2;
+	if (os_seph_features() & SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_SCREEN_BIG) {
+		UX_DISPLAY(bagl_ui_tx_desc_blue, NULL);
+	} else {
+		UX_DISPLAY(bagl_ui_tx_desc_nanos_2, NULL);
 	}
 }
 
