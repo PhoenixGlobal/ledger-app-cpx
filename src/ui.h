@@ -40,7 +40,7 @@ extern char timer_desc[MAX_TIMER_TEXT_WIDTH];
 /**
  * Nano S has 320 KB flash, 10 KB RAM, uses a ST31H320 chip.
  * This effectively limits the max size
- * So we can only display 10 screens of data, and can only sign transactions up to 1kb in size.
+ * So we can only display 9 screens of data, and can only sign transactions up to 1kb in size.
  * max size of a transaction, binary will not compile if we try to allow transactions over 1kb.
  */
 #define MAX_TX_RAW_LENGTH 1024
@@ -52,7 +52,7 @@ extern char timer_desc[MAX_TIMER_TEXT_WIDTH];
 #define MAX_TX_TEXT_LINES 3
 
 /** max number of screens to display. */
-#define MAX_TX_TEXT_SCREENS 10
+#define MAX_TX_TEXT_SCREENS 9
 
 /** max number of hex bytes that can be displayed (2 hex characters for 1 byte of data) */
 #define MAX_HEX_BUFFER_LEN (MAX_TX_TEXT_WIDTH / 2)
