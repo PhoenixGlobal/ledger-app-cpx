@@ -65,7 +65,7 @@ extern char timer_desc[MAX_TIMER_TEXT_WIDTH];
 
 /** UI currently displayed */
 enum UI_STATE {
-	UI_INIT, UI_IDLE, UI_TOP_SIGN, UI_TX_DESC, UI_SIGN, UI_DENY, UI_PUBLIC_KEY
+	UI_INIT, UI_IDLE, UI_TOP_SIGN, UI_TX_DESC_1,UI_TX_DESC_2, UI_SIGN, UI_DENY, UI_PUBLIC_KEY_1, UI_PUBLIC_KEY_2
 };
 
 /** UI state enum */
