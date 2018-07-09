@@ -23,7 +23,7 @@ include $(BOLOS_SDK)/Makefile.defines
 # Main app configuration
 
 APPNAME = "NEO"
-APPVERSION = 1.2.0
+APPVERSION = 1.3.1
 APP_LOAD_PARAMS = --path "44'/888'" --appFlags 0x40 --apdu $(COMMON_LOAD_PARAMS)
 APP_DELETE_PARAMS =  --apdu $(COMMON_DELETE_PARAMS)
 
@@ -36,7 +36,7 @@ endif
 # Build configuration
 
 APP_SOURCE_PATH += src
-SDK_SOURCE_PATH += lib_stusb lib_stusb_impl
+SDK_SOURCE_PATH += lib_stusb lib_stusb_impl lib_u2f
 
 DEFINES += APPVERSION=\"$(APPVERSION)\"
 
@@ -44,7 +44,13 @@ DEFINES += OS_IO_SEPROXYHAL IO_SEPROXYHAL_BUFFER_SIZE_B=128
 DEFINES += HAVE_BAGL HAVE_SPRINTF
 DEFINES += PRINTF\(...\)=
 
+DEFINES += CX_COMPLIANCE_141
+
 DEFINES += HAVE_IO_USB HAVE_L4_USBLIB IO_USB_MAX_ENDPOINTS=7 IO_HID_EP_LENGTH=64 HAVE_USB_APDU
+
+DEFINES += USB_SEGMENT_SIZE=64
+DEFINES += U2F_PROXY_MAGIC=\"NEO\"
+DEFINES += HAVE_IO_U2F
 
 # Compiler, assembler, and linker
 
