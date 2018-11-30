@@ -8,8 +8,8 @@
 // UI Macros borrowed from IOTA app
 
 #define COLOUR_NEO_GREEN 0x36bc2b
-#define COLOUR_GREEN 0x005653
-#define COLOUR_RED 0x6d0202
+#define COLOUR_GREEN_BUTTON 0x038900
+#define COLOUR_RED 0x8a0000
 #define COLOUR_WHITE 0xf9f9f9
 #define COLOUR_BLACK 0x000000
 #define COLOUR_GREY 0x888888
