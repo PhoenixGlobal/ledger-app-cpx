@@ -629,8 +629,6 @@ static unsigned int bagl_ui_top_sign_blue_button(unsigned int button_mask, unsig
 void ui_public_key_1(void) {
 	uiState = UI_PUBLIC_KEY_1;
 	if (os_seph_features() & SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_SCREEN_BIG) {
-		// TODO: add screen for the blue.
-		UX_DISPLAY(bagl_ui_public_key_nanos_1, NULL);
 	} else {
 		UX_DISPLAY(bagl_ui_public_key_nanos_1, NULL);
 	}
@@ -640,8 +638,6 @@ void ui_public_key_1(void) {
 void ui_public_key_2(void) {
 	uiState = UI_PUBLIC_KEY_2;
 	if (os_seph_features() & SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_SCREEN_BIG) {
-		// TODO: add screen for the blue.
-		UX_DISPLAY(bagl_ui_public_key_nanos_1, NULL);
 	} else {
 		UX_DISPLAY(bagl_ui_public_key_nanos_2, NULL);
 	}
