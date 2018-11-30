@@ -3,6 +3,7 @@
  */
 
 #include "ui.h"
+#include "blue_elements.h"
 
 /** default font */
 #define DEFAULT_FONT BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER
@@ -83,6 +84,9 @@ static const bagl_element_t * tx_desc_up(const bagl_element_t *e);
 /** move down in the transaction description list */
 static const bagl_element_t * tx_desc_dn(const bagl_element_t *e);
 
+/** return app to dashboard */
+static const bagl_element_t *bagl_ui_DASHBOARD_blue_button(const bagl_element_t *e);
+
 /** UI struct for the idle screen */
 static const bagl_element_t bagl_ui_idle_nanos[] = {
 // { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
@@ -101,17 +105,14 @@ static const bagl_element_t bagl_ui_idle_nanos[] = {
 
 /** UI struct for the idle screen, Blue.*/
 static const bagl_element_t bagl_ui_idle_blue[] = {
-// { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
-//		text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over, },
-	{	{	BAGL_RECTANGLE, 0x00, 0, 60, 320, 420, 0, 0, BAGL_FILL, 0x000000, 0x000000, 0, 0}, NULL, 0, 0, 0, NULL, NULL, NULL,},
-	{	{	BAGL_RECTANGLE, 0x00, 0, 0, 320, 60, 0, 0, BAGL_FILL, 0XFFFFFF, 0XFFFFFF, 0, 0}, NULL, 0, 0, 0, NULL, NULL, NULL,},
-	{	{	BAGL_LABEL, 0x00, 80, 0, 160, 60, 0, 0, BAGL_FILL, 0x000000, 0XFFFFFF, DEFAULT_FONT_BLUE, 0},
-		"Wake Up, NEO...", 0, 0, 0, NULL, NULL, NULL,},
-	{	{	BAGL_BUTTON | BAGL_FLAG_TOUCHABLE, 0x00, 110, 225, 100, 40, 0, 6, BAGL_FILL, 0XFFFFFF, 0x000000, DEFAULT_FONT_BLUE, 0},
-		"EXIT", 0, 0x37ae99, 0xF9F9F9, io_seproxyhal_touch_exit, NULL, NULL,},
-	/* timer label */
-	{	{	BAGL_LABEL, 0x00, 0, 0, 60, 60, 0, 0, BAGL_FILL, 0x000000, 0XFFFFFF, DEFAULT_FONT_BLUE, 0},
-		timer_desc, 0, 0, 0, NULL, NULL, NULL,},
+    BG_FILL,
+    HEADER_TEXT("NEO"),
+    HEADER_BUTTON_R(DASHBOARD),
+    
+    TEXT_CENTER(OPEN_TITLE, _Y(270), COLOUR_BLACK, FONT_L),
+    TEXT_CENTER(OPEN_MESSAGE1, _Y(310), COLOUR_BLACK, FONT_S),
+    TEXT_CENTER(OPEN_MESSAGE2, _Y(330), COLOUR_BLACK, FONT_S),
+    TEXT_CENTER(OPEN_MESSAGE3, _Y(450), COLOUR_GREY, FONT_XS)
 };
 
 /**
@@ -230,22 +231,14 @@ static const bagl_element_t bagl_ui_top_sign_nanos[] = {
 
 /** UI struct for the top "Sign Transaction" screen, Blue. */
 static const bagl_element_t bagl_ui_top_sign_blue[] = {
-// { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
-//		text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over, },
-	{	{	BAGL_RECTANGLE, 0x00, 0, 60, 320, 420, 0, 0, BAGL_FILL, 0x000000, 0x000000, 0, 0 }, NULL, 0, 0, 0, NULL, NULL, NULL, },
-	{	{	BAGL_RECTANGLE, 0x00, 0, 0, 320, 60, 0, 0, BAGL_FILL, 0XFFFFFF, 0XFFFFFF, 0, 0 }, NULL, 0, 0, 0, NULL, NULL, NULL, },
-	{	{	BAGL_LABEL, 0x00, 20, 0, 320, 60, 0, 0, BAGL_FILL, 0x000000, 0XFFFFFF, DEFAULT_FONT_BLUE, 0 },
-				"Sign Tx Now", 0, 0, 0, NULL, NULL, NULL, },
-	{ 	{	BAGL_BUTTON | BAGL_FLAG_TOUCHABLE, 0x00, 0, 225, 100, 40, 0, 6, BAGL_FILL, 0XFFFFFF, 0x000000, DEFAULT_FONT_BLUE, 0 },
-				"Up", 0, 0x37ae99, 0xF9F9F9, tx_desc_up, NULL, NULL, },
-	{	{	BAGL_BUTTON | BAGL_FLAG_TOUCHABLE, 0x00, 110, 225, 100, 40, 0, 6, BAGL_FILL, 0XFFFFFF, 0x000000, DEFAULT_FONT_BLUE, 0 },
-				"Sign", 0, 0x37ae99, 0xF9F9F9, io_seproxyhal_touch_approve, NULL, NULL, },
-	{ 	{	BAGL_BUTTON | BAGL_FLAG_TOUCHABLE, 0x00, 220, 225, 100, 40, 0, 6, BAGL_FILL, 0XFFFFFF, 0x000000, DEFAULT_FONT_BLUE, 0 },
-				"Down", 0, 0x37ae99, 0xF9F9F9, tx_desc_dn, NULL, NULL, },
-	/* timer label */
-	{	{	BAGL_LABEL, 0x00, 0, 0, 60, 60, 0, 0, BAGL_FILL, 0x000000, 0XFFFFFF, DEFAULT_FONT_BLUE, 0},
-		timer_desc, 0, 0, 0, NULL, NULL, NULL,},
-};
+    BG_FILL,
+    HEADER_TEXT("Transaction"),
+    
+    TEXT_CENTER(curr_tx_desc[0], _Y(240), COLOUR_BLACK, FONT_L),
+    TEXT_CENTER(curr_tx_desc[1], _Y(270), COLOUR_BLACK, FONT_L),
+    
+    BODY_BUTTON("Deny", _X(30), _Y(410), COLOUR_RED, io_seproxyhal_touch_deny),
+    BODY_BUTTON("Approve", _X(170), _Y(410), COLOUR_GREEN, io_seproxyhal_touch_approve)};
 
 /**
  * buttons for the top "Sign Transaction" screen
@@ -752,4 +745,18 @@ static void ui_deny(void) {
 unsigned int get_apdu_buffer_length() {
 	unsigned int len0 = G_io_apdu_buffer[APDU_BODY_LENGTH_OFFSET];
 	return len0;
+}
+
+/** set the blue menu bar colour */
+void ui_set_menu_bar_colour(void) {
+    if (os_seph_features() & SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_SCREEN_BIG) {
+        UX_SET_STATUS_BAR_COLOR(COLOUR_WHITE, COLOUR_NEO_GREEN);
+    }
+}
+
+/** returns to dashboard */
+static const bagl_element_t *bagl_ui_DASHBOARD_blue_button(const bagl_element_t *e)
+{
+    os_sched_exit(0);
+    return NULL;
 }
