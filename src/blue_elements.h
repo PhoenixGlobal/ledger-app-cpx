@@ -45,77 +45,78 @@
 #define OPEN_MESSAGE3 "Validation requests will show automatically."
 
 #define FILL_AREA(x, y, w, h, colour_fg, colour_bg)                            \
-{                                                                          \
-{BAGL_RECTANGLE, 0x00,      x,         y, w, h, 0, 0,                  \
-BAGL_FILL,      colour_fg, colour_bg, 0, 0},                          \
-NULL, 0, 0, 0, NULL, NULL, NULL,                                   \
-}
+    {                                                                          \
+        {BAGL_RECTANGLE, 0x00,      x,         y, w, h, 0, 0,                  \
+         BAGL_FILL,      colour_fg, colour_bg, 0, 0},                          \
+            NULL, 0, 0, 0, NULL, NULL, NULL,                                   \
+    }
 
-#define HEADER_BG_FILL FILL_AREA(0, 20, 320, 48, COLOUR_NEO_GREEN, COLOUR_NEO_GREEN)
+#define HEADER_BG_FILL                                                         \
+    FILL_AREA(0, 20, 320, 48, COLOUR_NEO_GREEN, COLOUR_NEO_GREEN)
 #define BODY_BG_FILL FILL_AREA(0, 68, 320, 412, COLOUR_WHITE, COLOUR_WHITE)
 
 #define BG_FILL HEADER_BG_FILL, BODY_BG_FILL
 
 #define HEADER_BUTTON(x, sym, callback)                                        \
-{                                                                          \
-{BAGL_RECTANGLE _TOUCHABLE,                                            \
-0x00,                                                                 \
-x,                                                                    \
-34,                                                                   \
-56,                                                                   \
-30,                                                                   \
-0,                                                                    \
-0,                                                                    \
-BAGL_FILL,                                                            \
-COLOUR_NEO_GREEN,                                                         \
-COLOUR_WHITE,                                                         \
-BAGL_FONT_SYMBOLS_0 _CENTERED,                                        \
-0},                                                                   \
-sym, 0, COLOUR_NEO_GREEN, COLOUR_GREY, callback, NULL, NULL,           \
-}
+    {                                                                          \
+        {BAGL_RECTANGLE _TOUCHABLE,                                            \
+         0x00,                                                                 \
+         x,                                                                    \
+         34,                                                                   \
+         56,                                                                   \
+         30,                                                                   \
+         0,                                                                    \
+         0,                                                                    \
+         BAGL_FILL,                                                            \
+         COLOUR_NEO_GREEN,                                                     \
+         COLOUR_WHITE,                                                         \
+         BAGL_FONT_SYMBOLS_0 _CENTERED,                                        \
+         0},                                                                   \
+            sym, 0, COLOUR_NEO_GREEN, COLOUR_GREY, callback, NULL, NULL,       \
+    }
 
 #define HEADER_BUTTON_L(l_b) HEADER_BUTTON(0, SYM(l_b), BUTTON(l_b))
 #define HEADER_BUTTON_R(r_b) HEADER_BUTTON(264, SYM(r_b), BUTTON(r_b))
 
 #define BODY_BUTTON(txt, x, y, colour, callback)                               \
-{                                                                          \
-{BAGL_BUTTON _TOUCHABLE,                                               \
-0x00,                                                                 \
-x,                                                                    \
-y,                                                                    \
-120,                                                                  \
-40,                                                                   \
-0,                                                                    \
-6,                                                                    \
-BAGL_FILL,                                                            \
-COLOUR_LIGHT(colour),                                                 \
-COLOUR_WHITE,                                                         \
-FONT_M _CENTERED _MIDDLE,                                             \
-0},                                                                   \
-txt, 0, colour, COLOUR_WHITE, callback, NULL, NULL,                \
-}
+    {                                                                          \
+        {BAGL_BUTTON _TOUCHABLE,                                               \
+         0x00,                                                                 \
+         x,                                                                    \
+         y,                                                                    \
+         120,                                                                  \
+         40,                                                                   \
+         0,                                                                    \
+         6,                                                                    \
+         BAGL_FILL,                                                            \
+         COLOUR_LIGHT(colour),                                                 \
+         COLOUR_WHITE,                                                         \
+         FONT_M _CENTERED _MIDDLE,                                             \
+         0},                                                                   \
+            txt, 0, colour, COLOUR_WHITE, callback, NULL, NULL,                \
+    }
 
 #define TEXT_EL(txt, x, y, w, h, colour_fg, colour_bg, font, pos)              \
-{                                                                          \
-{BAGL_LABELINE, 0x00,      x,        y, w, h, 0, 0, 0,                 \
-colour_fg,     colour_bg, font pos, 0},                               \
-txt, 0, 0, 0, NULL, NULL, NULL,                                    \
-}
+    {                                                                          \
+        {BAGL_LABELINE, 0x00,      x,        y, w, h, 0, 0, 0,                 \
+         colour_fg,     colour_bg, font pos, 0},                               \
+            txt, 0, 0, 0, NULL, NULL, NULL,                                    \
+    }
 
 #define HEADER_TEXT(txt)                                                       \
-TEXT_EL(txt, 0, 48, 320, 20, COLOUR_WHITE, COLOUR_NEO_GREEN, HEADER_FONT,      \
-_CENTERED)
+    TEXT_EL(txt, 0, 48, 320, 20, COLOUR_WHITE, COLOUR_NEO_GREEN, HEADER_FONT,  \
+            _CENTERED)
 
 #define TEXT_CENTER(txt, y, colour, font)                                      \
-TEXT_EL(txt, 30, y, 260, 20, colour, COLOUR_WHITE, font, _CENTERED)
+    TEXT_EL(txt, 30, y, 260, 20, colour, COLOUR_WHITE, font, _CENTERED)
 
 #define TEXT_LEFT(txt, y, colour, font)                                        \
-TEXT_EL(txt, 30, y, 260, 20, colour, COLOUR_WHITE, font, _LEFT)
+    TEXT_EL(txt, 30, y, 260, 20, colour, COLOUR_WHITE, font, _LEFT)
 
 #define TEXT_LEFT_TAB(txt, y, colour, font)                                    \
-TEXT_EL(txt, 30 + _TAB, y, 260, 20, colour, COLOUR_WHITE, font, _LEFT)
+    TEXT_EL(txt, 30 + _TAB, y, 260, 20, colour, COLOUR_WHITE, font, _LEFT)
 
 #define TEXT_RIGHT(txt, y, colour, font)                                       \
-TEXT_EL(txt, 30, y, 260, 20, colour, COLOUR_WHITE, font, _RIGHT)
+    TEXT_EL(txt, 30, y, 260, 20, colour, COLOUR_WHITE, font, _RIGHT)
 
 #endif // BLUE_ELEMENTS_H
