@@ -47,6 +47,9 @@
 #define FOOTER1 "App made by coranos"
 #define FOOTER2 "Blue UI designed by diskings"
 
+#define TX_FOOTER1 "When sending a NEP5 token with a fee, the tx"
+#define TX_FOOTER2 "info displayed will be for the gas return"
+
 #define NO_INFO "Info not available"
 
 #define FILL_AREA(x, y, w, h, colour_fg, colour_bg)                            \

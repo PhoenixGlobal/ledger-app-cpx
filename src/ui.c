@@ -269,7 +269,10 @@ static const bagl_element_t bagl_ui_top_sign_blue[] = {
     TEXT_CENTER(tx_desc[2][2], _Y(330), COLOUR_BLACK, FONT_M),
     
     BODY_BUTTON("Deny", _X(30), _Y(390), COLOUR_RED, io_seproxyhal_touch_deny),
-    BODY_BUTTON("Approve", _X(170), _Y(390), COLOUR_GREEN_BUTTON, io_seproxyhal_touch_approve)
+    BODY_BUTTON("Approve", _X(170), _Y(390), COLOUR_GREEN_BUTTON, io_seproxyhal_touch_approve),
+    
+    TEXT_CENTER(TX_FOOTER1, _Y(448), COLOUR_GREY, FONT_XS),
+    TEXT_CENTER(TX_FOOTER2, _Y(464), COLOUR_GREY, FONT_XS)
 };
 
 /**
