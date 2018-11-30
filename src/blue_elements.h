@@ -44,6 +44,11 @@
 #define OPEN_MESSAGE2 "preferred wallet to view your accounts."
 #define OPEN_MESSAGE3 "Validation requests will show automatically."
 
+#define FOOTER1 "App made by coranos"
+#define FOOTER2 "Blue UI designed by diskings"
+
+#define NO_INFO "Info not available"
+
 #define FILL_AREA(x, y, w, h, colour_fg, colour_bg)                            \
     {                                                                          \
         {BAGL_RECTANGLE, 0x00,      x,         y, w, h, 0, 0,                  \
@@ -77,6 +82,13 @@
 
 #define HEADER_BUTTON_L(l_b) HEADER_BUTTON(0, SYM(l_b), BUTTON(l_b))
 #define HEADER_BUTTON_R(r_b) HEADER_BUTTON(264, SYM(r_b), BUTTON(r_b))
+
+#define BODY_NEO_ICON                                                          \
+    {                                                                          \
+        {BAGL_ICON, 0x00,      135,          178,          50, 50, 0,          \
+         0,         BAGL_FILL, COLOUR_WHITE, COLOUR_WHITE, 0,  0},             \
+            (const char *)&C_badge_neo, 0, 0, 0, NULL, NULL, NULL,             \
+    }
 
 #define BODY_BUTTON(txt, x, y, colour, callback)                               \
     {                                                                          \

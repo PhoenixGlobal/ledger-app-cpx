@@ -4,6 +4,7 @@
 
 #include "ui.h"
 #include "blue_elements.h"
+#include "glyphs.h"
 
 /** default font */
 #define DEFAULT_FONT BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER
@@ -84,8 +85,8 @@ static const bagl_element_t * tx_desc_up(const bagl_element_t *e);
 /** move down in the transaction description list */
 static const bagl_element_t * tx_desc_dn(const bagl_element_t *e);
 
-/** null terminates the tx_desc variables */
-static void nullify_tx_desc(void);
+/** sets the tx_desc variables to no information */
+static void clear_tx_desc(void);
 
 /** return app to dashboard */
 static const bagl_element_t *bagl_ui_DASHBOARD_blue_button(const bagl_element_t *e);
@@ -117,6 +118,7 @@ static const bagl_element_t bagl_ui_idle_blue[] = {
     HEADER_BUTTON_R(DASHBOARD),
     HEADER_BUTTON_L(SETTINGS),
     
+    BODY_NEO_ICON,
     TEXT_CENTER(OPEN_TITLE, _Y(270), COLOUR_BLACK, FONT_L),
     TEXT_CENTER(OPEN_MESSAGE1, _Y(310), COLOUR_BLACK, FONT_S),
     TEXT_CENTER(OPEN_MESSAGE2, _Y(330), COLOUR_BLACK, FONT_S),
@@ -188,6 +190,9 @@ static const bagl_element_t bagl_ui_public_key_blue[] = {
     TEXT_CENTER(current_public_key[0], _Y(240), COLOUR_BLACK, FONT_L),
     TEXT_CENTER(current_public_key[1], _Y(270), COLOUR_BLACK, FONT_L),
     TEXT_CENTER(current_public_key[2], _Y(300), COLOUR_BLACK, FONT_L),
+    
+    TEXT_CENTER(FOOTER1, _Y(442), COLOUR_GREY, FONT_XS),
+    TEXT_CENTER(FOOTER2, _Y(458), COLOUR_GREY, FONT_XS)
 };
 
 /**
@@ -262,7 +267,6 @@ static const bagl_element_t bagl_ui_top_sign_blue[] = {
     TEXT_CENTER(tx_desc[2][0], _Y(290), COLOUR_BLACK, FONT_M),
     TEXT_CENTER(tx_desc[2][1], _Y(310), COLOUR_BLACK, FONT_M),
     TEXT_CENTER(tx_desc[2][2], _Y(330), COLOUR_BLACK, FONT_M),
-    
     
     BODY_BUTTON("Deny", _X(30), _Y(390), COLOUR_RED, io_seproxyhal_touch_deny),
     BODY_BUTTON("Approve", _X(170), _Y(390), COLOUR_GREEN_BUTTON, io_seproxyhal_touch_approve)
@@ -574,7 +578,7 @@ const bagl_element_t*io_seproxyhal_touch_approve(const bagl_element_t *e) {
 #endif		
 		// G_io_apdu_buffer[0] &= 0xF0; // discard the parity information
 		hashTainted = 1;
-        nullify_tx_desc();
+        clear_tx_desc();
 		raw_tx_ix = 0;
 		raw_tx_len = 0;
 
@@ -597,7 +601,7 @@ const bagl_element_t*io_seproxyhal_touch_approve(const bagl_element_t *e) {
 /** deny signing. */
 static const bagl_element_t *io_seproxyhal_touch_deny(const bagl_element_t *e) {
 	hashTainted = 1;
-    nullify_tx_desc();
+    clear_tx_desc();
 	raw_tx_ix = 0;
 	raw_tx_len = 0;
 	G_io_apdu_buffer[0] = 0x69;
@@ -710,17 +714,21 @@ unsigned int get_apdu_buffer_length() {
 void ui_set_menu_bar_colour(void) {
     if (os_seph_features() & SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_SCREEN_BIG) {
         UX_SET_STATUS_BAR_COLOR(COLOUR_WHITE, COLOUR_NEO_GREEN);
-        nullify_tx_desc();
+        clear_tx_desc();
     }
 }
 
-/** null terminates the tx_desc variables */
-static void nullify_tx_desc(void) {
+/** sets the tx_desc variables to no information */
+static void clear_tx_desc(void) {
     for(uint8_t i=0; i<MAX_TX_TEXT_SCREENS; i++) {
         for(uint8_t j=0; j<MAX_TX_TEXT_LINES; j++) {
             tx_desc[i][j][0] = '\0';
+            tx_desc[i][j][MAX_TX_TEXT_WIDTH - 1] = '\0';
         }
     }
+    
+    strncpy(tx_desc[1][0], NO_INFO, sizeof(NO_INFO));
+    strncpy(tx_desc[2][0], NO_INFO, sizeof(NO_INFO));
 }
 
 /** returns to dashboard */

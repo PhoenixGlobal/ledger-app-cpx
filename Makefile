@@ -90,8 +90,10 @@ load: all
 delete:
 	python -m ledgerblue.deleteApp $(APP_DELETE_PARAMS)
 
-# Import generic rules from the SDK
+# import rules to compile glyphs(/pone)
+include $(BOLOS_SDK)/Makefile.glyphs
 
+# Import generic rules from the SDK
 include $(BOLOS_SDK)/Makefile.rules
 
 listvariants:
