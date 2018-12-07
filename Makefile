@@ -85,13 +85,15 @@ LDLIBS += -lm -lgcc -lc
 all: default
 
 load: all
-	python3 -m ledgerblue.loadApp $(APP_LOAD_PARAMS)
+	python -m ledgerblue.loadApp $(APP_LOAD_PARAMS)
 
 delete:
-	python3 -m ledgerblue.deleteApp $(APP_DELETE_PARAMS)
+	python -m ledgerblue.deleteApp $(APP_DELETE_PARAMS)
+
+# import rules to compile glyphs(/pone)
+include $(BOLOS_SDK)/Makefile.glyphs
 
 # Import generic rules from the SDK
-
 include $(BOLOS_SDK)/Makefile.rules
 
 listvariants:

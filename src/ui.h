@@ -119,4 +119,7 @@ void ui_top_sign(void);
 /** return the length of the communication buffer */
 unsigned int get_apdu_buffer_length();
 
+/** sets menu bar colour for blue */
+void ui_set_menu_bar_colour(void);
+
 #endif // UI_H
