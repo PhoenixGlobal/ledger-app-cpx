@@ -591,6 +591,21 @@ unsigned char display_tx_desc() {
 
 		case DESCRIPTION:
 		case REMARK:
+		case REMARK1:
+		case REMARK2:
+		case REMARK3:
+		case REMARK4:
+		case REMARK5:
+		case REMARK6:
+		case REMARK7:
+		case REMARK8:
+		case REMARK9:
+		case REMARK10:
+		case REMARK11:
+		case REMARK12:
+		case REMARK13:
+		case REMARK14:
+		case REMARK15:
 			skip_raw_tx(next_raw_tx_varbytes_num());
 			break;
 
