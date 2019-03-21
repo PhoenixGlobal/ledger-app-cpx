@@ -24,7 +24,13 @@ char timer_desc[MAX_TIMER_TEXT_WIDTH];
 enum UI_STATE uiState;
 
 /** UI state flag */
+#ifdef TARGET_NANOX
+#include "ux.h"
+ux_state_t G_ux;
+bolos_ux_params_t G_ux_params;
+#else // TARGET_NANOX
 ux_state_t ux;
+#endif // TARGET_NANOX
 
 /** notification to restart the hash */
 unsigned char hashTainted;
@@ -94,6 +100,144 @@ static const bagl_element_t *bagl_ui_DASHBOARD_blue_button(const bagl_element_t 
 static const bagl_element_t *bagl_ui_SETTINGS_blue_button(const bagl_element_t *e);
 /** returns to NEO app on blue */
 static const bagl_element_t *bagl_ui_LEFT_blue_button(const bagl_element_t *e);
+
+
+////////////////////////////////////  NANO X //////////////////////////////////////////////////
+#ifdef TARGET_NANOX
+
+UX_FLOW_DEF_NOCB(
+    ux_confirm_single_flow_1_step, 
+    pnn, 
+    {
+      &C_icon_eye,
+      "Review",
+      "Transaction"
+    });
+UX_FLOW_DEF_NOCB(
+    ux_confirm_single_flow_2_step, 
+    bn, 
+    {
+      "Type",
+      tx_desc[0][1]
+    });
+UX_FLOW_DEF_NOCB(
+    ux_confirm_single_flow_3_step, 
+    bnn, 
+    {
+      "Amount",
+      tx_desc[1][0],
+      tx_desc[1][1],
+    });
+UX_FLOW_DEF_NOCB(
+    ux_confirm_single_flow_4_step, 
+    bnnn, 
+    {
+      "Destination Address",
+      tx_desc[2][0],
+      tx_desc[2][1],
+      tx_desc[2][2]
+    });
+UX_FLOW_DEF_VALID(
+    ux_confirm_single_flow_5_step, 
+    pb,
+    io_seproxyhal_touch_approve(NULL), 
+    {
+      &C_icon_validate_14,
+      "Accept",
+    });
+UX_FLOW_DEF_VALID(
+    ux_confirm_single_flow_6_step, 
+    pb, 
+    io_seproxyhal_touch_deny(NULL),
+    {
+      &C_icon_crossmark,
+      "Reject",
+    });
+UX_DEF(ux_confirm_single_flow,
+  &ux_confirm_single_flow_1_step,
+  &ux_confirm_single_flow_2_step,
+  &ux_confirm_single_flow_3_step,
+  &ux_confirm_single_flow_4_step,
+  &ux_confirm_single_flow_5_step,
+  &ux_confirm_single_flow_6_step
+);
+
+
+
+UX_FLOW_DEF_NOCB(
+    ux_display_public_flow_step, 
+    bnnn, 
+    {
+      "Address",
+      current_public_key[0],
+      current_public_key[1],
+      current_public_key[2]
+    });
+UX_FLOW_DEF_VALID(
+    ux_display_public_go_back_step, 
+    pb, 
+    ui_idle(),
+    {
+      &C_icon_back,
+      "Back",
+    });
+
+UX_DEF(ux_display_public_flow,
+  &ux_display_public_flow_step,
+  &ux_display_public_go_back_step
+);
+
+void display_account_address(){
+	if(G_ux.stack_count == 0) {
+			ux_stack_push();
+		}
+	ux_flow_init(0, ux_display_public_flow, NULL);
+}
+
+UX_FLOW_DEF_NOCB(
+    ux_idle_flow_1_step, 
+    nn, 
+    {
+      "Application",
+      "is ready",
+    });
+UX_FLOW_DEF_VALID(
+    ux_idle_flow_2_step,
+    pbb,
+    display_account_address(),
+    {
+      &C_icon_eye,
+      "Display",
+	  "Account"
+    });
+UX_FLOW_DEF_NOCB(
+    ux_idle_flow_3_step, 
+    bn, 
+    {
+      "Version",
+      APPVERSION,
+    });
+UX_FLOW_DEF_VALID(
+    ux_idle_flow_4_step,
+    pb,
+    os_sched_exit(-1),
+    {
+      &C_icon_dashboard,
+      "Quit",
+    });
+
+UX_DEF(ux_idle_flow,
+  &ux_idle_flow_1_step,
+  &ux_idle_flow_2_step,
+  &ux_idle_flow_3_step,
+  &ux_idle_flow_4_step
+);
+
+
+#endif
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 /** UI struct for the idle screen */
 static const bagl_element_t bagl_ui_idle_nanos[] = {
@@ -649,58 +793,68 @@ void ui_public_key_2(void) {
 /** show the idle screen. */
 void ui_idle(void) {
 	uiState = UI_IDLE;
-	if (os_seph_features() & SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_SCREEN_BIG) {
-		UX_DISPLAY(bagl_ui_idle_blue, NULL);
-	} else {
-		UX_DISPLAY(bagl_ui_idle_nanos, NULL);
-	}
+
+#if defined(TARGET_BLUE)
+    UX_DISPLAY(bagl_ui_idle_blue, NULL);
+#elif defined(TARGET_NANOS)
+    UX_DISPLAY(bagl_ui_idle_nanos, NULL);
+#elif defined(TARGET_NANOX)
+    // reserve a display stack slot if none yet
+    if(G_ux.stack_count == 0) {
+        ux_stack_push();
+    }
+    ux_flow_init(0, ux_idle_flow, NULL);
+#endif // #if TARGET_ID
 }
 
 /** show the transaction description screen. */
 static void ui_display_tx_desc_1(void) {
 	uiState = UI_TX_DESC_1;
-	if (os_seph_features() & SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_SCREEN_BIG) {
-	} else {
-		UX_DISPLAY(bagl_ui_tx_desc_nanos_1, NULL);
-	}
+#if defined(TARGET_NANOS)
+    UX_DISPLAY(bagl_ui_tx_desc_nanos_1, NULL);
+#endif // #if TARGET_ID
 }
 
 
 /** show the transaction description screen. */
 static void ui_display_tx_desc_2(void) {
 	uiState = UI_TX_DESC_2;
-	if (os_seph_features() & SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_SCREEN_BIG) {
-	} else {
-		UX_DISPLAY(bagl_ui_tx_desc_nanos_2, NULL);
-	}
+#if defined(TARGET_NANOS)
+    UX_DISPLAY(bagl_ui_tx_desc_nanos_2, NULL);
+#endif // #if TARGET_ID
 }
 
 /** show the bottom "Sign Transaction" screen. */
 static void ui_sign(void) {
 	uiState = UI_SIGN;
-	if (os_seph_features() & SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_SCREEN_BIG) {
-	} else {
-		UX_DISPLAY(bagl_ui_sign_nanos, NULL);
-	}
+#if defined(TARGET_NANOS)
+    UX_DISPLAY(bagl_ui_sign_nanos, NULL);
+#endif // #if TARGET_ID
 }
 
 /** show the top "Sign Transaction" screen. */
 void ui_top_sign(void) {
 	uiState = UI_TOP_SIGN;
-	if (os_seph_features() & SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_SCREEN_BIG) {
-		UX_DISPLAY(bagl_ui_top_sign_blue, NULL);
-	} else {
-		UX_DISPLAY(bagl_ui_top_sign_nanos, NULL);
-	}
+
+#if defined(TARGET_BLUE)
+    UX_DISPLAY(bagl_ui_top_sign_blue, NULL);
+#elif defined(TARGET_NANOS)
+    UX_DISPLAY(bagl_ui_top_sign_nanos, NULL);
+#elif defined(TARGET_NANOX)
+    // reserve a display stack slot if none yet
+    if(G_ux.stack_count == 0) {
+        ux_stack_push();
+    }
+    ux_flow_init(0, ux_confirm_single_flow, NULL);
+#endif // #if TARGET_ID
 }
 
 /** show the "deny" screen */
 static void ui_deny(void) {
 	uiState = UI_DENY;
-	if (os_seph_features() & SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_SCREEN_BIG) {
-	} else {
-		UX_DISPLAY(bagl_ui_deny_nanos, NULL);
-	}
+#if defined(TARGET_NANOS)
+    UX_DISPLAY(bagl_ui_deny_nanos, NULL);
+#endif // #if TARGET_ID
 }
 
 /** returns the length of the transaction in the buffer. */
@@ -711,10 +865,10 @@ unsigned int get_apdu_buffer_length() {
 
 /** set the blue menu bar colour */
 void ui_set_menu_bar_colour(void) {
-    if (os_seph_features() & SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_SCREEN_BIG) {
-        UX_SET_STATUS_BAR_COLOR(COLOUR_WHITE, COLOUR_NEO_GREEN);
-        clear_tx_desc();
-    }
+#if defined(TARGET_BLUE)
+    UX_SET_STATUS_BAR_COLOR(COLOUR_WHITE, COLOUR_NEO_GREEN);
+    clear_tx_desc();
+#endif // #if TARGET_ID
 }
 
 /** sets the tx_desc variables to no information */

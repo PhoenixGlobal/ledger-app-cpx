@@ -24,25 +24,28 @@ include $(BOLOS_SDK)/Makefile.defines
 
 APPNAME = "NEO"
 APPVERSION = 1.3.4
-APP_LOAD_PARAMS = --path "44'/888'" --path "44'/1024'" --appFlags 0x40 --apdu $(COMMON_LOAD_PARAMS)
+APP_LOAD_PARAMS = --path "44'/888'" --path "44'/1024'" --appFlags 0x20 --apdu $(COMMON_LOAD_PARAMS)
 APP_DELETE_PARAMS =  --apdu $(COMMON_DELETE_PARAMS)
 
 ifeq ($(TARGET_NAME),TARGET_BLUE)
-ICONNAME=icon_blue.gif
+ICONNAME=blue_app_neo.gif
 else
-ICONNAME=icon.gif
+	ifeq ($(TARGET_NAME),TARGET_NANOX)
+ICONNAME=nanox_app_neo.gif
+	else
+ICONNAME=nanos_app_neo.gif
+	endif
 endif
 
-# Build configuration
 
-APP_SOURCE_PATH += src
-SDK_SOURCE_PATH += lib_stusb lib_stusb_impl lib_u2f
+# Build configuration
 
 DEFINES += APPVERSION=\"$(APPVERSION)\"
 
 DEFINES += OS_IO_SEPROXYHAL IO_SEPROXYHAL_BUFFER_SIZE_B=128
 DEFINES += HAVE_BAGL HAVE_SPRINTF
 DEFINES += PRINTF\(...\)=
+#DEFINES   += HAVE_PRINTF PRINTF=mcu_usb_printf
 
 DEFINES += CX_COMPLIANCE_141
 
@@ -51,6 +54,21 @@ DEFINES += HAVE_IO_USB HAVE_L4_USBLIB IO_USB_MAX_ENDPOINTS=7 IO_HID_EP_LENGTH=64
 DEFINES += USB_SEGMENT_SIZE=64
 DEFINES += U2F_PROXY_MAGIC=\"NEO\"
 DEFINES += HAVE_IO_U2F
+
+WEBUSB_URL     = www.ledgerwallet.com
+DEFINES       += HAVE_WEBUSB WEBUSB_URL_SIZE_B=$(shell echo -n $(WEBUSB_URL) | wc -c) WEBUSB_URL=$(shell echo -n $(WEBUSB_URL) | sed -e "s/./\\\'\0\\\',/g")
+
+ifeq ($(TARGET_NAME),TARGET_NANOX)
+DEFINES       += HAVE_BLE BLE_COMMAND_TIMEOUT_MS=2000
+DEFINES       += HAVE_BLE_APDU # basic ledger apdu transport over BLE
+
+DEFINES       += HAVE_GLO096 HAVE_UX_LEGACY
+DEFINES       += HAVE_BAGL BAGL_WIDTH=128 BAGL_HEIGHT=64
+DEFINES       += HAVE_BAGL_ELLIPSIS # long label truncation feature
+DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_REGULAR_11PX
+DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_EXTRABOLD_11PX
+DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_LIGHT_16PX
+endif
 
 # Compiler, assembler, and linker
 
@@ -79,6 +97,14 @@ AFLAGS +=
 LD := $(GCCPATH)arm-none-eabi-gcc
 LDFLAGS += -O3 -Os
 LDLIBS += -lm -lgcc -lc
+
+APP_SOURCE_PATH += src
+SDK_SOURCE_PATH += lib_stusb lib_stusb_impl lib_u2f
+
+ifeq ($(TARGET_NAME),TARGET_NANOX)
+SDK_SOURCE_PATH  += lib_blewbxx lib_blewbxx_impl
+SDK_SOURCE_PATH  += lib_ux
+endif
 
 # Main rules
 

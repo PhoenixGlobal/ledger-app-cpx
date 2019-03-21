@@ -798,4 +798,5 @@ void display_public_key(const unsigned char * public_key) {
 	os_memmove(current_public_key[0], address_base58_0, address_base58_len_0);
 	os_memmove(current_public_key[1], address_base58_1, address_base58_len_1);
 	os_memmove(current_public_key[2], address_base58_2, address_base58_len_2);
+
 }
