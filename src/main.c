@@ -371,6 +371,16 @@ unsigned char io_event(unsigned char channel) {
 		break;
 
 	case SEPROXYHAL_TAG_TICKER_EVENT:
+#if defined(TARGET_NANOX)
+	UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {
+            // don't redisplay if UX not allowed (pin locked in the common bolos
+            // ux ?)
+            if (UX_ALLOWED) {
+                // redisplay screen
+                UX_REDISPLAY();
+            }
+        });
+#else
 //		UX_REDISPLAY();
 		Timer_Tick();
 		if (publicKeyNeedsRefresh == 1) {
@@ -383,6 +393,7 @@ unsigned char io_event(unsigned char channel) {
 				Timer_UpdateDisplay();
 			}
 		}
+#endif
 		break;
 
 		// unknown events are acknowledged
