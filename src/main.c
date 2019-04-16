@@ -294,8 +294,8 @@ static void neo_main(void) {
 							cx_sha256_t pubKeyHash;
 							cx_sha256_init(&pubKeyHash);
 
-							cx_hash(&pubKeyHash.header, CX_LAST, publicKey.W, 65, result);
-							tx += cx_ecdsa_sign((void*) &privateKey, CX_RND_RFC6979 | CX_LAST, CX_SHA256, result, sizeof(result), G_io_apdu_buffer + tx, NULL);
+							cx_hash(&pubKeyHash.header, CX_LAST, publicKey.W, 65, result, 32);
+							tx += cx_ecdsa_sign((void*) &privateKey, CX_RND_RFC6979 | CX_LAST, CX_SHA256, result, sizeof(result), G_io_apdu_buffer + tx, sizeof(G_io_apdu_buffer)-tx, NULL);
 
 							// return 0x9000 OK.
 							THROW(0x9000);
