@@ -22,18 +22,18 @@ include $(BOLOS_SDK)/Makefile.defines
 
 # Main app configuration
 
-APPNAME = "NEO"
-APPVERSION = 1.3.5
-APP_LOAD_PARAMS = --path "44'/888'" --path "44'/1024'" --appFlags 0x240 --apdu $(COMMON_LOAD_PARAMS)
+APPNAME = "CPX"
+APPVERSION = 0.0.1
+APP_LOAD_PARAMS = --path "44'/888'" --appFlags 0x240 --apdu $(COMMON_LOAD_PARAMS)
 APP_DELETE_PARAMS =  --apdu $(COMMON_DELETE_PARAMS)
 
 ifeq ($(TARGET_NAME),TARGET_BLUE)
 ICONNAME=blue_app_neo.gif
 else
 	ifeq ($(TARGET_NAME),TARGET_NANOX)
-ICONNAME=nanox_app_neo.gif
+ICONNAME=nanox_app_cpx.gif
 	else
-ICONNAME=nanos_app_neo.gif
+ICONNAME=nanos_app_cpx.gif
 	endif
 endif
 
@@ -49,7 +49,7 @@ DEFINES += HAVE_BAGL HAVE_SPRINTF
 DEFINES += HAVE_IO_USB HAVE_L4_USBLIB IO_USB_MAX_ENDPOINTS=7 IO_HID_EP_LENGTH=64 HAVE_USB_APDU
 
 DEFINES += USB_SEGMENT_SIZE=64
-DEFINES += U2F_PROXY_MAGIC=\"NEO\"
+DEFINES += U2F_PROXY_MAGIC=\"CPX\"
 DEFINES += HAVE_IO_U2F
 
 WEBUSB_URL     = www.ledgerwallet.com
@@ -125,7 +125,7 @@ endif
 
 all: default
 
-load: all
+load:
 	python -m ledgerblue.loadApp $(APP_LOAD_PARAMS)
 
 delete:
@@ -138,4 +138,4 @@ include $(BOLOS_SDK)/Makefile.glyphs
 include $(BOLOS_SDK)/Makefile.rules
 
 listvariants:
-	@echo VARIANTS neo
+	@echo VARIANTS cpx
