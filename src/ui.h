@@ -43,7 +43,7 @@ extern char timer_desc[MAX_TIMER_TEXT_WIDTH];
  * So we can only display 9 screens of data, and can only sign transactions up to 1kb in size.
  * max size of a transaction, binary will not compile if we try to allow transactions over 1kb.
  */
-#define MAX_TX_RAW_LENGTH 1024
+#define MAX_TX_RAW_LENGTH 800
 
 /** max width of a single line of text. */
 #define MAX_TX_TEXT_WIDTH 18
@@ -65,7 +65,11 @@ extern char timer_desc[MAX_TIMER_TEXT_WIDTH];
 
 /** UI currently displayed */
 enum UI_STATE {
-	UI_INIT, UI_IDLE, UI_TOP_SIGN, UI_TX_DESC_1,UI_TX_DESC_2, UI_SIGN, UI_DENY, UI_PUBLIC_KEY_1, UI_PUBLIC_KEY_2
+	UI_INIT, UI_IDLE, UI_TOP_SIGN, UI_TX_DESC_1, UI_TX_DESC_2, UI_TX_DESC_SINGLE_PAGE, UI_SIGN, UI_DENY, UI_PUBLIC_KEY_1, UI_PUBLIC_KEY_2
+};
+
+enum SCREEN_TYPE {
+	SINGLE_PAGE = 0x00, TWO_PAGE = 0x01
 };
 
 /** UI state enum */

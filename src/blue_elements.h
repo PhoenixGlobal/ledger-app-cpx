@@ -7,7 +7,7 @@
 
 // UI Macros borrowed from IOTA app
 
-#define COLOUR_NEO_GREEN 0x36bc2b
+#define COLOUR_CPX_GREEN 0x36bc2b
 #define COLOUR_GREEN_BUTTON 0x038900
 #define COLOUR_RED 0x8a0000
 #define COLOUR_WHITE 0xf9f9f9
@@ -38,7 +38,7 @@
 
 #define _TAB 8
 
-#define OPEN_TITLE "Open NEO Wallet"
+#define OPEN_TITLE "Open CPX Wallet"
 
 #define OPEN_MESSAGE1 "Connect the Ledger Blue and open your"
 #define OPEN_MESSAGE2 "preferred wallet to view your accounts."
@@ -60,7 +60,7 @@
     }
 
 #define HEADER_BG_FILL                                                         \
-    FILL_AREA(0, 20, 320, 48, COLOUR_NEO_GREEN, COLOUR_NEO_GREEN)
+    FILL_AREA(0, 20, 320, 48, COLOUR_CPX_GREEN, COLOUR_CPX_GREEN)
 #define BODY_BG_FILL FILL_AREA(0, 68, 320, 412, COLOUR_WHITE, COLOUR_WHITE)
 
 #define BG_FILL HEADER_BG_FILL, BODY_BG_FILL
@@ -76,17 +76,17 @@
          0,                                                                    \
          0,                                                                    \
          BAGL_FILL,                                                            \
-         COLOUR_NEO_GREEN,                                                     \
+         COLOUR_CPX_GREEN,                                                     \
          COLOUR_WHITE,                                                         \
          BAGL_FONT_SYMBOLS_0 _CENTERED,                                        \
          0},                                                                   \
-            sym, 0, COLOUR_NEO_GREEN, COLOUR_GREY, callback, NULL, NULL,       \
+            sym, 0, COLOUR_CPX_GREEN, COLOUR_GREY, callback, NULL, NULL,       \
     }
 
 #define HEADER_BUTTON_L(l_b) HEADER_BUTTON(0, SYM(l_b), BUTTON(l_b))
 #define HEADER_BUTTON_R(r_b) HEADER_BUTTON(264, SYM(r_b), BUTTON(r_b))
 
-#define BODY_NEO_ICON                                                          \
+#define BODY_CPX_ICON                                                          \
     {                                                                          \
         {BAGL_ICON, 0x00,      135,          178,          50, 50, 0,          \
          0,         BAGL_FILL, COLOUR_WHITE, COLOUR_WHITE, 0,  0},             \
@@ -119,7 +119,7 @@
     }
 
 #define HEADER_TEXT(txt)                                                       \
-    TEXT_EL(txt, 0, 48, 320, 20, COLOUR_WHITE, COLOUR_NEO_GREEN, HEADER_FONT,  \
+    TEXT_EL(txt, 0, 48, 320, 20, COLOUR_WHITE, COLOUR_CPX_GREEN, HEADER_FONT,  \
             _CENTERED)
 
 #define TEXT_CENTER(txt, y, colour, font)                                      \

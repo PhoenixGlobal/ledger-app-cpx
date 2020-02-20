@@ -20,8 +20,8 @@
 #include <stdbool.h>
 #include "os_io_seproxyhal.h"
 #include "ui.h"
-#include "neo.h"
 #include "bagl.h"
+#include "cpx.h"
 
 #define MAX_EXIT_TIMER 4098
 
@@ -72,9 +72,6 @@ unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 /** instruction to send back the public key. */
 #define INS_GET_PUBLIC_KEY 0x04
 
-/** instruction to send back the public key, and a signature of the private key signing the public key. */
-#define INS_GET_SIGNED_PUBLIC_KEY 0x08
-
 /** #### instructions end #### */
 
 /** some kind of event loop */
@@ -113,7 +110,7 @@ static void refresh_public_key_display(void) {
 }
 
 /** main loop. */
-static void neo_main(void) {
+static void cpx_main(void) {
 	volatile unsigned int rx = 0;
 	volatile unsigned int tx = 0;
 	volatile unsigned int flags = 0;
@@ -244,58 +241,6 @@ static void neo_main(void) {
 
 							display_public_key(publicKey.W);
 							refresh_public_key_display();
-
-							// return 0x9000 OK.
-							THROW(0x9000);
-						}
-							break;
-
-							// we're asking for the signed public key.
-						case INS_GET_SIGNED_PUBLIC_KEY: {
-							Timer_Restart();
-
-							cx_ecfp_public_key_t publicKey;
-							cx_ecfp_private_key_t privateKey;
-
-							if (rx < APDU_HEADER_LENGTH + BIP44_BYTE_LENGTH) {
-								hashTainted = 1;
-								THROW(0x6D10);
-							}
-
-							/** BIP44 path, used to derive the private key from the mnemonic by calling os_perso_derive_node_bip32. */
-							unsigned char * bip44_in = G_io_apdu_buffer + APDU_HEADER_LENGTH;
-
-							unsigned int bip44_path[BIP44_PATH_LEN];
-							uint32_t i;
-							for (i = 0; i < BIP44_PATH_LEN; i++) {
-								bip44_path[i] = (bip44_in[0] << 24) | (bip44_in[1] << 16) | (bip44_in[2] << 8) | (bip44_in[3]);
-								bip44_in += 4;
-							}
-							unsigned char privateKeyData[32];
-							os_perso_derive_node_bip32(CX_CURVE_256R1, bip44_path, BIP44_PATH_LEN, privateKeyData, NULL);
-							cx_ecdsa_init_private_key(CX_CURVE_256R1, privateKeyData, 32, &privateKey);
-
-							// generate the public key.
-							cx_ecdsa_init_public_key(CX_CURVE_256R1, NULL, 0, &publicKey);
-							cx_ecfp_generate_pair(CX_CURVE_256R1, &publicKey, &privateKey, 1);
-
-							// push the public key onto the response buffer.
-							os_memmove(G_io_apdu_buffer, publicKey.W, 65);
-							tx = 65;
-
-							display_public_key(publicKey.W);
-							refresh_public_key_display();
-
-							G_io_apdu_buffer[tx++] = 0xFF;
-							G_io_apdu_buffer[tx++] = 0xFF;
-
-							unsigned char result[32];
-
-							cx_sha256_t pubKeyHash;
-							cx_sha256_init(&pubKeyHash);
-
-							cx_hash(&pubKeyHash.header, CX_LAST, publicKey.W, 65, result, 32);
-							tx += cx_ecdsa_sign((void*) &privateKey, CX_RND_RFC6979 | CX_LAST, CX_SHA256, result, sizeof(result), G_io_apdu_buffer + tx, sizeof(G_io_apdu_buffer)-tx, NULL);
 
 							// return 0x9000 OK.
 							THROW(0x9000);
@@ -458,7 +403,7 @@ __attribute__((section(".boot"))) int main(void) {
 					Timer_Set();
 
 					// run main event loop.
-					neo_main();
+					cpx_main();
 				}
 				CATCH_OTHER(e)
 				{

@@ -2,8 +2,8 @@
  * MIT License, see root folder for full license.
  */
 
-#ifndef NEO_H
-#define NEO_H
+#ifndef CPX_H
+#define CPX_H
 
 #include "os.h"
 #include "cx.h"
@@ -20,4 +20,4 @@ void display_no_public_key(void);
 /** displays the public key, assumes length is 65. */
 void display_public_key(const unsigned char * public_key);
 
-#endif // NEO_H
+#endif // CPX_H

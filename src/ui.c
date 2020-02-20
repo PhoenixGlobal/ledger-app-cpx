@@ -72,6 +72,7 @@ static const bagl_element_t * io_seproxyhal_touch_exit(const bagl_element_t *e);
 static const bagl_element_t * io_seproxyhal_touch_deny(const bagl_element_t *e);
 
 /** display part of the transaction description */
+static void ui_display_tx_desc_single_page(void);
 static void ui_display_tx_desc_1(void);
 static void ui_display_tx_desc_2(void);
 
@@ -98,7 +99,7 @@ static void clear_tx_desc(void);
 static const bagl_element_t *bagl_ui_DASHBOARD_blue_button(const bagl_element_t *e);
 /** goes to settings menu (pubkey display) on blue */
 static const bagl_element_t *bagl_ui_SETTINGS_blue_button(const bagl_element_t *e);
-/** returns to NEO app on blue */
+/** returns to CPX app on blue */
 static const bagl_element_t *bagl_ui_LEFT_blue_button(const bagl_element_t *e);
 
 
@@ -246,7 +247,7 @@ static const bagl_element_t bagl_ui_idle_nanos[] = {
 // },
 		{	{	BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF, 0, 0 }, NULL, 0, 0, 0, NULL, NULL, NULL, },
 		/* center text */
-		{	{	BAGL_LABELINE, 0x02, 0, 12, 128, 11, 0, 0, 0, 0xFFFFFF, 0x000000, DEFAULT_FONT, 0 }, "Wake Up, NEO...", 0, 0, 0, NULL, NULL, NULL, },
+		{	{	BAGL_LABELINE, 0x02, 0, 12, 128, 11, 0, 0, 0, 0xFFFFFF, 0x000000, DEFAULT_FONT, 0 }, "Waiting ...", 0, 0, 0, NULL, NULL, NULL, },
 		/* left icon is a X */
 		{	{	BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_CROSS }, NULL, 0, 0, 0, NULL, NULL, NULL, },
 		/* right icon is an eye. */
@@ -258,11 +259,11 @@ static const bagl_element_t bagl_ui_idle_nanos[] = {
 /** UI struct for the idle screen, Blue.*/
 static const bagl_element_t bagl_ui_idle_blue[] = {
     BG_FILL,
-    HEADER_TEXT("NEO"),
+    HEADER_TEXT("CPX"),
     HEADER_BUTTON_R(DASHBOARD),
     HEADER_BUTTON_L(SETTINGS),
     
-    BODY_NEO_ICON,
+    BODY_CPX_ICON,
     TEXT_CENTER(OPEN_TITLE, _Y(270), COLOUR_BLACK, FONT_L),
     TEXT_CENTER(OPEN_MESSAGE1, _Y(310), COLOUR_BLACK, FONT_S),
     TEXT_CENTER(OPEN_MESSAGE2, _Y(330), COLOUR_BLACK, FONT_S),
@@ -286,7 +287,6 @@ static unsigned int bagl_ui_idle_nanos_button(unsigned int button_mask, unsigned
 
 	return 0;
 }
-
 
 
 /** UI struct for the idle screen */
@@ -523,6 +523,43 @@ static unsigned int bagl_ui_deny_nanos_button(unsigned int button_mask, unsigned
 }
 
 /** UI struct for the transaction description screen, Nano S. */
+static const bagl_element_t bagl_ui_tx_desc_nanos_single_page[] = {
+// { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
+// text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
+// },
+	{	{	BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF, 0, 0 }, NULL, 0, 0, 0, NULL, NULL, NULL, },
+	/* screen 1 number */
+	{	{	BAGL_LABELINE, 0x02, 0, 10, 20, 11, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000, TX_DESC_FONT, 0 }, 0, 0, 0, 0, NULL, NULL, NULL, },
+	/* first line of description of current screen */
+	{	{	BAGL_LABELINE, 0x02, 10, 15, 108, 11, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000, TX_DESC_FONT, 0 }, curr_tx_desc[0], 0, 0, 0, NULL, NULL, NULL, },
+	/* second line of description of current screen */
+	{	{	BAGL_LABELINE, 0x02, 10, 26, 108, 11, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000, TX_DESC_FONT, 0 }, curr_tx_desc[1], 0, 0, 0, NULL, NULL, NULL, },
+	/* left icon is up arrow  */
+	{	{	BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_UP }, NULL, 0, 0, 0, NULL, NULL, NULL, },
+	/* right icon is down arrow */
+	{	{	BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_DOWN }, NULL, 0, 0, 0, NULL, NULL, NULL, },
+/* */
+};
+
+/**
+ * buttons for the transaction description screen
+ *
+ * up on Left button, down on right button.
+ */
+static unsigned int bagl_ui_tx_desc_nanos_single_page_button(unsigned int button_mask, unsigned int button_mask_counter) {
+	switch (button_mask) {
+	case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
+		tx_desc_dn(NULL);
+		break;
+
+	case BUTTON_EVT_RELEASED | BUTTON_LEFT:
+		tx_desc_up(NULL);
+		break;
+	}
+	return 0;
+}
+
+/** UI struct for the transaction description screen, Nano S. */
 static const bagl_element_t bagl_ui_tx_desc_nanos_1[] = {
 // { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
 // text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
@@ -611,6 +648,13 @@ static void copy_tx_desc(void) {
 	curr_tx_desc[2][MAX_TX_TEXT_WIDTH - 1] = '\0';
 }
 
+/** copy the current row of the tx_desc buffer into curr_tx_desc to display on the screen */
+static void copy_tx_desc_single_page(void) {
+	os_memmove(curr_tx_desc, tx_desc[curr_scr_ix], CURR_TX_DESC_LEN);
+	curr_tx_desc[0][MAX_TX_TEXT_WIDTH - 1] = '\0';
+	curr_tx_desc[1][MAX_TX_TEXT_WIDTH - 1] = '\0';
+}
+
 /** processes the Up button */
 static const bagl_element_t * tx_desc_up(const bagl_element_t *e) {
 	switch (uiState) {
@@ -695,8 +739,6 @@ const bagl_element_t*io_seproxyhal_touch_approve(const bagl_element_t *e) {
 
 	if (G_io_apdu_buffer[2] == P1_LAST) {
 		unsigned int raw_tx_len_except_bip44 = raw_tx_len - BIP44_BYTE_LENGTH;
-		// Update and sign the hash
-		cx_hash(&hash.header, 0, raw_tx, raw_tx_len_except_bip44, NULL, 0);
 
 		unsigned char * bip44_in = raw_tx + raw_tx_len_except_bip44;
 
@@ -708,34 +750,32 @@ const bagl_element_t*io_seproxyhal_touch_approve(const bagl_element_t *e) {
 			bip44_in += 4;
 		}
 
+		cx_ecfp_private_key_t privateKey;
 		unsigned char privateKeyData[32];
 		os_perso_derive_node_bip32(CX_CURVE_256R1, bip44_path, BIP44_PATH_LEN, privateKeyData, NULL);
-
-		cx_ecfp_private_key_t privateKey;
 		cx_ecdsa_init_private_key(CX_CURVE_256R1, privateKeyData, 32, &privateKey);
 
-		// Hash is finalized, send back the signature
-		unsigned char result[32];
+		//hash and sign
+		unsigned char hashResult[32];
+		cx_hash(&hash.header, CX_LAST, raw_tx, raw_tx_len_except_bip44, hashResult, 32);
 
-		cx_hash(&hash.header, CX_LAST, G_io_apdu_buffer, 0, result, 32);
-#if CX_APILEVEL >= 8		
-		tx = cx_ecdsa_sign((void*) &privateKey, CX_RND_RFC6979 | CX_LAST, CX_SHA256, result, sizeof(result), G_io_apdu_buffer, sizeof(G_io_apdu_buffer), NULL);
-#else		
-		tx = cx_ecdsa_sign((void*) &privateKey, CX_RND_RFC6979 | CX_LAST, CX_SHA256, result, sizeof(result), G_io_apdu_buffer);
-#endif		
-		// G_io_apdu_buffer[0] &= 0xF0; // discard the parity information
+		tx = cx_ecdsa_sign(&privateKey,  CX_RND_RFC6979 | CX_LAST, CX_SHA256, hashResult, sizeof(hashResult), G_io_apdu_buffer, sizeof(G_io_apdu_buffer), NULL);
+
 		hashTainted = 1;
         clear_tx_desc();
 		raw_tx_ix = 0;
 		raw_tx_len = 0;
-
+#if 0
 		// add hash to the response, so we can see where the bug is.
 		G_io_apdu_buffer[tx++] = 0xFF;
 		G_io_apdu_buffer[tx++] = 0xFF;
 		for (int ix = 0; ix < 32; ix++) {
-			G_io_apdu_buffer[tx++] = result[ix];
+			G_io_apdu_buffer[tx++] = hashResult[ix];
 		}
+#endif
+
 	}
+
 	G_io_apdu_buffer[tx++] = 0x90;
 	G_io_apdu_buffer[tx++] = 0x00;
 	// Send back the response, do not restart the event loop
@@ -808,6 +848,14 @@ void ui_idle(void) {
 }
 
 /** show the transaction description screen. */
+static void ui_display_tx_desc_single_page(void) {
+	uiState = UI_TX_DESC_SINGLE_PAGE;
+#if defined(TARGET_NANOS)
+    UX_DISPLAY(bagl_ui_tx_desc_nanos_single_page, NULL);
+#endif // #if TARGET_ID
+}
+
+/** show the transaction description screen. */
 static void ui_display_tx_desc_1(void) {
 	uiState = UI_TX_DESC_1;
 #if defined(TARGET_NANOS)
@@ -823,6 +871,7 @@ static void ui_display_tx_desc_2(void) {
     UX_DISPLAY(bagl_ui_tx_desc_nanos_2, NULL);
 #endif // #if TARGET_ID
 }
+
 
 /** show the bottom "Sign Transaction" screen. */
 static void ui_sign(void) {
@@ -866,7 +915,7 @@ unsigned int get_apdu_buffer_length() {
 /** set the blue menu bar colour */
 void ui_set_menu_bar_colour(void) {
 #if defined(TARGET_BLUE)
-    UX_SET_STATUS_BAR_COLOR(COLOUR_WHITE, COLOUR_NEO_GREEN);
+    UX_SET_STATUS_BAR_COLOR(COLOUR_WHITE, COLOUR_CPX_GREEN);
     clear_tx_desc();
 #endif // #if TARGET_ID
 }
@@ -898,7 +947,7 @@ static const bagl_element_t *bagl_ui_SETTINGS_blue_button(const bagl_element_t *
     return NULL;
 }
 
-/** returns to NEO app on blue */
+/** returns to CPX app on blue */
 static const bagl_element_t *bagl_ui_LEFT_blue_button(const bagl_element_t *e)
 {
     ui_idle();
