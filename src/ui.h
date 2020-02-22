@@ -111,6 +111,8 @@ extern char curr_tx_desc[MAX_TX_TEXT_LINES][MAX_TX_TEXT_WIDTH];
 /** currently displayed public key */
 extern char current_public_key[MAX_TX_TEXT_LINES][MAX_TX_TEXT_WIDTH];
 
+extern int screen_index_page_type[MAX_TX_TEXT_SCREENS];
+
 /** process a partial transaction */
 const bagl_element_t * io_seproxyhal_touch_approve(const bagl_element_t *e);
 

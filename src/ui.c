@@ -667,8 +667,13 @@ static const bagl_element_t * tx_desc_up(const bagl_element_t *e) {
 			ui_top_sign();
 		} else {
 			curr_scr_ix--;
-			copy_tx_desc();
-			ui_display_tx_desc_2();
+			if (screen_index_page_type[curr_scr_ix] == SINGLE_PAGE) {
+				copy_tx_desc_single_page();
+				ui_display_tx_desc_single_page();
+			} else {
+				copy_tx_desc();
+				ui_display_tx_desc_2();
+			}
 		}
 		break;
 
@@ -676,10 +681,31 @@ static const bagl_element_t * tx_desc_up(const bagl_element_t *e) {
 		ui_display_tx_desc_1();
 		break;
 
+
+	case UI_TX_DESC_SINGLE_PAGE:
+		if (curr_scr_ix == 0) {
+			ui_top_sign();
+		} else {
+			curr_scr_ix--;
+			if (screen_index_page_type[curr_scr_ix] == SINGLE_PAGE) {
+				copy_tx_desc_single_page();
+				ui_display_tx_desc_single_page();
+			} else {
+				copy_tx_desc();
+				ui_display_tx_desc_2();
+			}
+		}
+		break;
+
 	case UI_SIGN:
 		curr_scr_ix = max_scr_ix - 1;
-		copy_tx_desc();
-		ui_display_tx_desc_1();
+		if (screen_index_page_type[curr_scr_ix] == SINGLE_PAGE) {
+			copy_tx_desc_single_page();
+			ui_display_tx_desc_single_page();
+		} else {
+			copy_tx_desc();
+			ui_display_tx_desc_1();
+		}
 		break;
 
 	case UI_DENY:
@@ -699,8 +725,28 @@ static const bagl_element_t * tx_desc_dn(const bagl_element_t *e) {
 	switch (uiState) {
 	case UI_TOP_SIGN:
 		curr_scr_ix = 0;
-		copy_tx_desc();
-		ui_display_tx_desc_1();
+		if (screen_index_page_type[curr_scr_ix] == SINGLE_PAGE) {
+			copy_tx_desc_single_page();
+			ui_display_tx_desc_single_page();
+		} else {
+			copy_tx_desc();
+			ui_display_tx_desc_1();
+		}
+		break;
+
+	case UI_TX_DESC_SINGLE_PAGE:
+		if (curr_scr_ix == max_scr_ix - 1) {
+			ui_sign();
+		} else {
+			curr_scr_ix++;
+			if (screen_index_page_type[curr_scr_ix] == SINGLE_PAGE) {
+				copy_tx_desc_single_page();
+				ui_display_tx_desc_single_page();
+			} else {
+				copy_tx_desc();
+				ui_display_tx_desc_1();
+			}
+		}
 		break;
 
 	case UI_TX_DESC_1:
@@ -712,8 +758,13 @@ static const bagl_element_t * tx_desc_dn(const bagl_element_t *e) {
 			ui_sign();
 		} else {
 			curr_scr_ix++;
-			copy_tx_desc();
-			ui_display_tx_desc_1();
+			if (screen_index_page_type[curr_scr_ix] == SINGLE_PAGE) {
+				copy_tx_desc_single_page();
+				ui_display_tx_desc_single_page();
+			} else {
+				copy_tx_desc();
+				ui_display_tx_desc_1();
+			}
 		}
 		break;
 
