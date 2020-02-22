@@ -11,17 +11,9 @@
 /** if true, show a screen with the transaction type. */
 #define SHOW_TX_TYPE true
 
-/** if true, show a screen with the transaction length. */
-#define SHOW_TX_LEN false
-
 /** if true, show a screen with the transaction from address. */
 #define SHOW_FROM_ADDRESS false
 
-/** if true, show tx-out values in hex as well as decimal. */
-#define SHOW_VALUE_HEX false
-
-/** if true, show script hash screen as well as address screen */
-#define SHOW_SCRIPT_HASH false
 
 /**
  * CPX TX fields
@@ -53,6 +45,9 @@
 /** the length of a SHA256 hash */
 #define SHA256_HASH_LEN 32
 
+#define APEX_ADDRESS_PREFIX_1	0x05	// bin for 'A'
+#define APEX_ADDRESS_PREFIX_2	0x48	// bin for 'P'
+
 /**
  * transaction types.
  *
@@ -79,22 +74,28 @@ static const char TXT_VERSION[] = "Version";
 static const char TXT_TX_TYPE[] = "Tx Type";
 
 /** Label when displaying a Miner transaction */
-static const char TX_MINER_NM[] = "Miner Tx";
+static const char TX_MINER_NM[] = "Miner";
 
 /** Label when displaying a Transfer transaction */
 static const char TX_TRANSFER_NM[] = "Transfer";
 
 /** Label when displaying a Deploy transaction */
-static const char TX_DEPLOY_NM[] = "Deploy Tx";
+static const char TX_DEPLOY_NM[] = "Deploy";
 
 /** Label when displaying a Call transaction */
-static const char TX_CALL_NM[] = "Call Tx";
+static const char TX_CALL_NM[] = "Call";
 
 /** Label when displaying a Refund transaction */
-static const char TX_REFUND_NM[] = "Refund Tx";
+static const char TX_REFUND_NM[] = "Refund";
 
 /** Label when displaying a Schedule transaction */
-static const char TX_SCHEDULE_NM[] = "Schedule Tx";
+static const char TX_SCHEDULE_NM[] = "Schedule";
+
+/** Version label */
+static const char TXT_ADDRESS_FROM[] = "From:";
+
+/** Version label */
+static const char TXT_ADDRESS_TO[] = "To:";
 
 
 /** Label when a public key has not been set yet */
@@ -299,8 +300,8 @@ static void to_address(char * dest, unsigned int dest_len, const unsigned char *
 
 	// concatenate the address prefix ("AP")and the address.
 	unsigned char address[ADDRESS_LEN];
-	address[0] = 0x05;
-	address[1] = 0x48;
+	address[0] = APEX_ADDRESS_PREFIX_1;
+	address[1] = APEX_ADDRESS_PREFIX_2;
 	os_memmove(address + 2, script_hash, SCRIPT_HASH_LEN);
 
 	// do a sha256 hash of the address twice.
@@ -400,13 +401,7 @@ unsigned char display_tx_desc() {
 			to_hex(hex_buffer, tx_version, hex_buffer_len);
 			os_memmove(tx_desc[scr_ix][1], hex_buffer, hex_buffer_len);
 
-#if 0
-			hex_buffer_len = min(MAX_HEX_BUFFER_LEN, sizeof(raw_tx_ix)) * 2;
-			to_hex(hex_buffer, (unsigned char *) &raw_tx_ix, hex_buffer_len);
-			os_memmove(tx_desc[scr_ix][2], hex_buffer, hex_buffer_len);
-#endif
-
-			screen_index_page_type[scr_ix] = TWO_PAGE;
+			screen_index_page_type[scr_ix] = SINGLE_PAGE;
 			scr_ix++;
 		}
 	}
@@ -442,15 +437,7 @@ unsigned char display_tx_desc() {
 				THROW(0x6D06);
 			}
 
-			if (SHOW_TX_LEN) {
-				hex_buffer_len = min(MAX_HEX_BUFFER_LEN, sizeof(raw_tx_len)) * 2;
-				to_hex(hex_buffer, (unsigned char *) &raw_tx_len, hex_buffer_len);
-				os_memmove(tx_desc[scr_ix][2], hex_buffer, hex_buffer_len);
-			} else {
-				os_memmove(tx_desc[scr_ix][2], TXT_BLANK, sizeof(TXT_BLANK));
-			}
-
-			screen_index_page_type[scr_ix] = TWO_PAGE;
+			screen_index_page_type[scr_ix] = SINGLE_PAGE;
 			scr_ix++;
 		}
 	}
@@ -513,7 +500,7 @@ unsigned char display_tx_desc() {
 
 		os_memmove(tx_desc[scr_ix][1], value, sizeof(value));
 
-		screen_index_page_type[scr_ix] = TWO_PAGE;
+		screen_index_page_type[scr_ix] = SINGLE_PAGE;
 		scr_ix++;
 	}
 
@@ -542,7 +529,7 @@ unsigned char display_tx_desc() {
 
 		os_memmove(tx_desc[scr_ix][1], fee_price, sizeof(fee_price));
 
-		screen_index_page_type[scr_ix] = TWO_PAGE;
+		screen_index_page_type[scr_ix] = SINGLE_PAGE;
 		scr_ix++;
 	}
 
