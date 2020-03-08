@@ -2,6 +2,7 @@
  * MIT License, see root folder for full license.
  */
 #include "cpx.h"
+#include "uint256.h"
 
 #include <string.h>
 
@@ -24,11 +25,8 @@
 /** length of tx.txid.value */
 #define CPX_TX_ID_LEN 1
 
-/** length of tx.output.value */
-#define VALUE_LEN 8
-
-/** length of tx.output.asset_id */
-#define ASSET_ID_LEN 32
+/** length of tx.output.nonce */
+#define NONCE_LEN 8
 
 /** length of tx.output.script_hash */
 #define SCRIPT_HASH_LEN 20
@@ -45,8 +43,15 @@
 /** the length of a SHA256 hash */
 #define SHA256_HASH_LEN 32
 
+/** Apex address prefix */
 #define APEX_ADDRESS_PREFIX_1	0x05	// bin for 'A'
 #define APEX_ADDRESS_PREFIX_2	0x48	// bin for 'P'
+
+/** number of digits for CPX */
+#define CPX_DIGITS 18
+
+/** max value char size */
+#define CPX_VALUE_BUFFER_SIZE 32
 
 /**
  * transaction types.
@@ -62,10 +67,13 @@ enum TX_TYPE {
 static const char TXT_BLANK[] = "                 ";
 
 /** CPX asset's label. */
-static const char TXT_ASSET_CPX[] = "CPX";
+static const char TXT_ASSET_CPX_NAME[] = "CPX";
 
-/** CPX asset's label. */
-static const char TXT_ASSET_FEE[] = "Fee (KGP)";
+/** CPX value label. */
+static const char TXT_ASSET_VALUE_NAME[] = "Value";
+
+/** CPX fee label. */
+static const char TXT_ASSET_FEE[] = "Fee";
 
 /** Version label */
 static const char TXT_VERSION[] = "Version";
@@ -90,12 +98,6 @@ static const char TX_REFUND_NM[] = "Refund";
 
 /** Label when displaying a Schedule transaction */
 static const char TX_SCHEDULE_NM[] = "Schedule";
-
-/** Version label */
-static const char TXT_ADDRESS_FROM[] = "From:";
-
-/** Version label */
-static const char TXT_ADDRESS_TO[] = "To:";
 
 
 /** Label when a public key has not been set yet */
@@ -200,18 +202,18 @@ static unsigned int encode_base_x(const char * alphabet, const unsigned int alph
 	return total_length;
 }
 
+/** performs decimal placement on the src buffer at provided position */
 bool adjustDecimals(char *src, uint32_t srcLength, char *target,
                     uint32_t targetLength, uint8_t decimals) {
     uint32_t startOffset;
     uint32_t lastZeroOffset = 0;
     uint32_t offset = 0;
-
     if ((srcLength == 1) && (*src == '0')) {
         if (targetLength < 2) {
             return false;
         }
-        target[offset++] = '0';
-        target[offset++] = '\0';
+        target[0] = '0';
+        target[1] = '\0';
         return true;
     }
     if (srcLength <= decimals) {
@@ -264,33 +266,6 @@ bool adjustDecimals(char *src, uint32_t srcLength, char *target,
     }
     return true;
 }
-unsigned short print_amount(uint64_t amount, uint8_t *out,
-                                uint32_t outlen, uint8_t sun) {
-    char tmp[20];
-    char tmp2[25];
-    uint32_t numDigits = 0, i;
-    uint64_t base = 1;
-    while (base <= amount) {
-        base *= 10;
-        numDigits++;
-    }
-    if (numDigits > sizeof(tmp) - 1) {
-        THROW(0x6a80);
-    }
-    base /= 10;
-    for (i = 0; i < numDigits; i++) {
-        tmp[i] = '0' + ((amount / base) % 10);
-        base /= 10;
-    }
-    tmp[i] = '\0';
-    adjustDecimals(tmp, i, tmp2, 25, sun);
-    if (strlen(tmp2) < outlen - 1) {
-        strcpy((char *)out, tmp2);
-    } else {
-        out[0] = '\0';
-    }
-    return strlen((char *)out);
-}
 
 /** converts a CPX scripthash to a CPX address by adding a checksum and encoding in base58 */
 static void to_address(char * dest, unsigned int dest_len, const unsigned char * script_hash) {
@@ -327,6 +302,14 @@ static void to_hex(char * dest, const unsigned char * src, const unsigned int de
 		*(dest + dest_ix + 0) = HEX_CAP[nibble0];
 		*(dest + dest_ix + 1) = HEX_CAP[nibble1];
 	}
+}
+
+/** converts a bigint data buffer into uint256_t type */
+void convertUint256BE(uint8_t *data, uint32_t length, uint256_t *target) {
+	uint8_t tmp[32];
+    os_memset(tmp, 0, 32);
+    os_memmove(tmp + 32 - length, data, length);
+    readu256BE(tmp, target);
 }
 
 /** returns the minimum of two ints. */
@@ -388,12 +371,14 @@ static unsigned char next_raw_tx() {
 
 unsigned char display_tx_desc() {
 	unsigned int scr_ix = 0;
-	char hex_buffer[MAX_TX_TEXT_WIDTH];
-	unsigned int hex_buffer_len = 0;
 
+	// tx version
 	unsigned char tx_version[CPX_TX_VERSION_LEN];
 	next_raw_tx_arr(tx_version, CPX_TX_VERSION_LEN);
 	if (SHOW_TX_VERSION) {
+		char hex_buffer[MAX_TX_TEXT_WIDTH];
+		unsigned int hex_buffer_len = 0;
+
 		if (scr_ix < MAX_TX_TEXT_SCREENS) {
 			os_memmove(tx_desc[scr_ix][0], TXT_VERSION, sizeof(TXT_VERSION));
 
@@ -406,6 +391,7 @@ unsigned char display_tx_desc() {
 		}
 	}
 
+	// tx type
 	enum TX_TYPE trans_type = next_raw_tx();
 	if (SHOW_TX_TYPE) {
 		if (scr_ix < MAX_TX_TEXT_SCREENS) {
@@ -422,6 +408,10 @@ unsigned char display_tx_desc() {
 
 			case TX_DEPLOY:
 				os_memmove(tx_desc[scr_ix][1], TX_DEPLOY_NM, sizeof(TX_DEPLOY_NM));
+				break;
+
+			case TX_CALL:
+				os_memmove(tx_desc[scr_ix][1], TX_CALL_NM, sizeof(TX_CALL_NM));
 				break;
 
 			case TX_REFUND:
@@ -442,21 +432,22 @@ unsigned char display_tx_desc() {
 		}
 	}
 
-	// from-to addresses
-	unsigned char fromAddressHash[SCRIPT_HASH_LEN];
-	next_raw_tx_arr(fromAddressHash, SCRIPT_HASH_LEN);
+	// addresses
+	unsigned char addressHash[SCRIPT_HASH_LEN];
+	next_raw_tx_arr(addressHash, SCRIPT_HASH_LEN);
 
 	char address_base58[ADDRESS_BASE58_LEN];
 	unsigned int address_base58_len_0 = 12;
 	unsigned int address_base58_len_1 = 11;
 	unsigned int address_base58_len_2 = 12;
+
 	char * address_base58_0 = address_base58;
 	char * address_base58_1 = address_base58 + address_base58_len_0;
 	char * address_base58_2 = address_base58 + address_base58_len_0 + address_base58_len_1;
 
 	// from address
 	if (SHOW_FROM_ADDRESS) {
-		to_address(address_base58, ADDRESS_BASE58_LEN, fromAddressHash);
+		to_address(address_base58, ADDRESS_BASE58_LEN, addressHash);
 		// address screen
 		if (scr_ix < MAX_TX_TEXT_SCREENS) {
 			os_memset(tx_desc[scr_ix], '\0', CURR_TX_DESC_LEN);
@@ -469,10 +460,9 @@ unsigned char display_tx_desc() {
 		}
 	}
 	// to address
-	unsigned char toAddressHash[SCRIPT_HASH_LEN];
-	next_raw_tx_arr(toAddressHash, SCRIPT_HASH_LEN);
+	next_raw_tx_arr(addressHash, SCRIPT_HASH_LEN);
+	to_address(address_base58, ADDRESS_BASE58_LEN, addressHash);
 
-	to_address(address_base58, ADDRESS_BASE58_LEN, toAddressHash);
 	// address screen
 	if (scr_ix < MAX_TX_TEXT_SCREENS) {
 		os_memset(tx_desc[scr_ix], '\0', CURR_TX_DESC_LEN);
@@ -484,57 +474,70 @@ unsigned char display_tx_desc() {
 		scr_ix++;
 	}
 
-	// CPX value
-	unsigned char value_len = next_raw_tx();;
-	unsigned char value[value_len];
-	next_raw_tx_arr(value, value_len);
-	uint64_t value_divisor = 1000000000000000;
+	// value (variable length)
+	char srcBuffer[CPX_VALUE_BUFFER_SIZE];
+	char dstBuffer[CPX_VALUE_BUFFER_SIZE];
+	uint256_t uint256;
+
+	uint8_t value_len = next_raw_tx();
+	next_raw_tx_arr((unsigned char *) srcBuffer, value_len);
+
+	convertUint256BE((unsigned char *) srcBuffer, value_len, &uint256);
+	tostring256(&uint256, 10, srcBuffer, sizeof(srcBuffer));
+	adjustDecimals(srcBuffer, strlen(srcBuffer), dstBuffer, sizeof(dstBuffer), CPX_DIGITS);
+
+	unsigned int value_len_0 = 14;
+	unsigned int value_len_1 = 14;
+	char * value_0 = dstBuffer;
+	char * value_1 = dstBuffer + value_len_0;
 
 	if (scr_ix < MAX_TX_TEXT_SCREENS) {
-		os_memset(tx_desc[scr_ix], '\0', CURR_TX_DESC_LEN);
-
-		os_memmove(tx_desc[scr_ix][0], TXT_ASSET_CPX, sizeof(TXT_ASSET_CPX));
-		uint64_t value_int = (uint64_t)value[0] << 56 | (uint64_t)value[1] << 48 | (uint64_t)value[2] << 40 | (uint64_t)value[3] << 32 | (uint64_t)value[4] << 24 | (uint64_t)value[5] << 16 | (uint64_t)value[6] << 8 | (uint64_t)value[7];
-		value_int = value_int / value_divisor;
-		print_amount(value_int, value, sizeof(value), 3) ;
-
-		os_memmove(tx_desc[scr_ix][1], value, sizeof(value));
-
+		os_memmove(tx_desc[scr_ix][0], TXT_ASSET_VALUE_NAME, sizeof(TXT_ASSET_VALUE_NAME));
+		os_memmove(tx_desc[scr_ix][1], value_0, value_len_0);
 		screen_index_page_type[scr_ix] = SINGLE_PAGE;
+
+		if(strlen(dstBuffer) > value_len_0) {
+			os_memmove(tx_desc[scr_ix][2], value_1, value_len_1);
+			screen_index_page_type[scr_ix] = TWO_PAGE;
+		}
 		scr_ix++;
 	}
 
-	// nonce (8bytes)
-	unsigned char nonce[8];
-	next_raw_tx_arr(nonce, 8);
+	// nonce
+	unsigned char nonce[NONCE_LEN];
+	next_raw_tx_arr(nonce, NONCE_LEN);
 
-	// data
+	// data (variable length)
 	unsigned char data_len = next_raw_tx();;
 	unsigned char data[data_len];
 	next_raw_tx_arr(data, data_len);
 
-	// fee
-	unsigned char fee_len = next_raw_tx();;
-	unsigned char fee_price[fee_len];
-	next_raw_tx_arr(fee_price, fee_len);
-	uint64_t fee_divisor = 1000000000000;
+	// fee (variable length)
+	uint8_t fee_len = next_raw_tx();;
+	next_raw_tx_arr((unsigned char *) srcBuffer, fee_len);
+
+	convertUint256BE((unsigned char *) srcBuffer, fee_len, &uint256);
+	tostring256(&uint256, 10, srcBuffer, sizeof(srcBuffer));
+	adjustDecimals(srcBuffer, strlen(srcBuffer), dstBuffer, sizeof(dstBuffer), CPX_DIGITS);
+
+	unsigned int fee_len_0 = 14;
+	unsigned int fee_len_1 = 14;
+	char * fee_0 = dstBuffer;
+	char * fee_1 = dstBuffer + value_len_0;
 
 	if (scr_ix < MAX_TX_TEXT_SCREENS) {
-		os_memset(tx_desc[scr_ix], '\0', CURR_TX_DESC_LEN);
-
 		os_memmove(tx_desc[scr_ix][0], TXT_ASSET_FEE, sizeof(TXT_ASSET_FEE));
-		uint64_t fee_int = (uint64_t)fee_price[0] << 40 | (uint64_t)fee_price[1] << 32 | (uint64_t)fee_price[2] << 24 | (uint64_t)fee_price[3] << 16 | (uint64_t)fee_price[4] << 8 | (uint64_t)fee_price[5];
-		fee_int = fee_int / fee_divisor;
-		print_amount(fee_int, fee_price, sizeof(fee_price), 0) ;
-
-		os_memmove(tx_desc[scr_ix][1], fee_price, sizeof(fee_price));
-
+		os_memmove(tx_desc[scr_ix][1], fee_0, fee_len_0);
 		screen_index_page_type[scr_ix] = SINGLE_PAGE;
+
+		if(strlen(dstBuffer) > fee_len_0) {
+			os_memmove(tx_desc[scr_ix][2], fee_1, fee_len_1);
+			screen_index_page_type[scr_ix] = TWO_PAGE;
+		}
 		scr_ix++;
 	}
 
 	max_scr_ix = scr_ix;
-
 	os_memmove(curr_tx_desc, tx_desc[curr_scr_ix], CURR_TX_DESC_LEN);
 
 	return 1;
