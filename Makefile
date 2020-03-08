@@ -23,7 +23,7 @@ include $(BOLOS_SDK)/Makefile.defines
 # Main app configuration
 
 APPNAME = "CPX"
-APPVERSION = 0.0.1
+APPVERSION = 0.0.2
 APP_LOAD_PARAMS = --path "44'/888'" --appFlags 0x240 --apdu $(COMMON_LOAD_PARAMS)
 APP_DELETE_PARAMS =  --apdu $(COMMON_DELETE_PARAMS)
 
