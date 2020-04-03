@@ -3,7 +3,6 @@
  */
 
 #include "ui.h"
-#include "blue_elements.h"
 #include "glyphs.h"
 
 /** default font */
@@ -95,12 +94,6 @@ static const bagl_element_t * tx_desc_dn(const bagl_element_t *e);
 /** sets the tx_desc variables to no information */
 static void clear_tx_desc(void);
 
-/** return app to dashboard */
-static const bagl_element_t *bagl_ui_DASHBOARD_blue_button(const bagl_element_t *e);
-/** goes to settings menu (pubkey display) on blue */
-static const bagl_element_t *bagl_ui_SETTINGS_blue_button(const bagl_element_t *e);
-/** returns to CPX app on blue */
-static const bagl_element_t *bagl_ui_LEFT_blue_button(const bagl_element_t *e);
 
 
 ////////////////////////////////////  NANO X //////////////////////////////////////////////////
@@ -234,13 +227,11 @@ UX_FLOW(ux_idle_flow,
   &ux_idle_flow_4_step
 );
 
-
 #endif
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-/** UI struct for the idle screen */
+/** UI struct for the idle screen, Nano S */
 static const bagl_element_t bagl_ui_idle_nanos[] = {
 // { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
 // text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
@@ -256,24 +247,10 @@ static const bagl_element_t bagl_ui_idle_nanos[] = {
 /* */
 };
 
-/** UI struct for the idle screen, Blue.*/
-static const bagl_element_t bagl_ui_idle_blue[] = {
-    BG_FILL,
-    HEADER_TEXT("CPX"),
-    HEADER_BUTTON_R(DASHBOARD),
-    HEADER_BUTTON_L(SETTINGS),
-    
-    BODY_CPX_ICON,
-    TEXT_CENTER(OPEN_TITLE, _Y(270), COLOUR_BLACK, FONT_L),
-    TEXT_CENTER(OPEN_MESSAGE1, _Y(310), COLOUR_BLACK, FONT_S),
-    TEXT_CENTER(OPEN_MESSAGE2, _Y(330), COLOUR_BLACK, FONT_S),
-    TEXT_CENTER(OPEN_MESSAGE3, _Y(450), COLOUR_GREY, FONT_XS)
-};
-
 /**
- * buttons for the idle screen
+ * buttons for the idle screen, Nano S
  *
- * exit on Left button, or on Both buttons. Do nothing on Right button only.
+ * exit on Left button, public key screen 1 on Right button.
  */
 static unsigned int bagl_ui_idle_nanos_button(unsigned int button_mask, unsigned int button_mask_counter) {
 	switch (button_mask) {
@@ -284,12 +261,10 @@ static unsigned int bagl_ui_idle_nanos_button(unsigned int button_mask, unsigned
 		io_seproxyhal_touch_exit(NULL);
 		break;
 	}
-
 	return 0;
 }
 
-
-/** UI struct for the idle screen */
+/** UI struct for the public key screen 1, Nano S */
 static const bagl_element_t bagl_ui_public_key_nanos_1[] = {
 // { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
 // text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
@@ -307,7 +282,7 @@ static const bagl_element_t bagl_ui_public_key_nanos_1[] = {
 };
 
 
-/** UI struct for the idle screen */
+/** UI struct for the public key screen 2, Nano S */
 static const bagl_element_t bagl_ui_public_key_nanos_2[] = {
 // { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
 // text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
@@ -325,24 +300,10 @@ static const bagl_element_t bagl_ui_public_key_nanos_2[] = {
 /* */
 };
 
-/** UI struct for the top "Sign Transaction" screen, Blue. */
-static const bagl_element_t bagl_ui_public_key_blue[] = {
-    BG_FILL,
-    HEADER_TEXT("Public Key"),
-    HEADER_BUTTON_L(LEFT),
-    
-    TEXT_CENTER(current_public_key[0], _Y(240), COLOUR_BLACK, FONT_L),
-    TEXT_CENTER(current_public_key[1], _Y(270), COLOUR_BLACK, FONT_L),
-    TEXT_CENTER(current_public_key[2], _Y(300), COLOUR_BLACK, FONT_L),
-    
-    TEXT_CENTER(FOOTER1, _Y(442), COLOUR_GREY, FONT_XS),
-    TEXT_CENTER(FOOTER2, _Y(458), COLOUR_GREY, FONT_XS)
-};
-
 /**
- * buttons for the idle screen
+ * buttons for the public key screen 1, Nano S
  *
- * exit on Left button, or on Both buttons. Do nothing on Right button only.
+ * idle on Right button, public key screen 2 on Left button.
  */
 static unsigned int bagl_ui_public_key_nanos_1_button(unsigned int button_mask, unsigned int button_mask_counter) {
 	switch (button_mask) {
@@ -353,16 +314,13 @@ static unsigned int bagl_ui_public_key_nanos_1_button(unsigned int button_mask, 
 		ui_public_key_2();
 		break;
 	}
-
-
 	return 0;
 }
 
-
 /**
- * buttons for the idle screen
+ * buttons for the public key screen 2, Nano S
  *
- * exit on Left button, or on Both buttons. Do nothing on Right button only.
+ * idle on Right button, public key screen 1 on Left button.
  */
 static unsigned int bagl_ui_public_key_nanos_2_button(unsigned int button_mask, unsigned int button_mask_counter) {
 	switch (button_mask) {
@@ -377,7 +335,7 @@ static unsigned int bagl_ui_public_key_nanos_2_button(unsigned int button_mask, 
 }
 
 
-/** UI struct for the top "Sign Transaction" screen, Nano S. */
+/** UI struct for the top "Sign Transaction" screen, Nano S */
 static const bagl_element_t bagl_ui_top_sign_nanos[] = {
 // { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
 // text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
@@ -396,31 +354,8 @@ static const bagl_element_t bagl_ui_top_sign_nanos[] = {
 /* */
 };
 
-/** UI struct for the top "Sign Transaction" screen, Blue. */
-static const bagl_element_t bagl_ui_top_sign_blue[] = {
-    BG_FILL,
-    HEADER_TEXT("Transaction"),
-    
-    TEXT_CENTER(tx_desc[0][1], _Y(110), COLOUR_BLACK, FONT_L),
-    
-    TEXT_CENTER("Amount", _Y(160), COLOUR_BLACK, FONT_L),
-    TEXT_CENTER(tx_desc[1][0], _Y(190), COLOUR_BLACK, FONT_M),
-    TEXT_CENTER(tx_desc[1][1], _Y(210), COLOUR_BLACK, FONT_M),
-    
-    TEXT_CENTER("Destination Address", _Y(260), COLOUR_BLACK, FONT_L),
-    TEXT_CENTER(tx_desc[2][0], _Y(290), COLOUR_BLACK, FONT_M),
-    TEXT_CENTER(tx_desc[2][1], _Y(310), COLOUR_BLACK, FONT_M),
-    TEXT_CENTER(tx_desc[2][2], _Y(330), COLOUR_BLACK, FONT_M),
-    
-    BODY_BUTTON("Deny", _X(30), _Y(390), COLOUR_RED, io_seproxyhal_touch_deny),
-    BODY_BUTTON("Approve", _X(170), _Y(390), COLOUR_GREEN_BUTTON, io_seproxyhal_touch_approve),
-    
-    TEXT_CENTER(TX_FOOTER1, _Y(448), COLOUR_GREY, FONT_XS),
-    TEXT_CENTER(TX_FOOTER2, _Y(464), COLOUR_GREY, FONT_XS)
-};
-
 /**
- * buttons for the top "Sign Transaction" screen
+ * buttons for the top "Sign Transaction" screen, Nano S
  *
  * up on Left button, down on right button, sign on both buttons.
  */
@@ -461,7 +396,7 @@ static const bagl_element_t bagl_ui_sign_nanos[] = {
 };
 
 /**
- * buttons for the bottom "Sign Transaction" screen
+ * buttons for the bottom "Sign Transaction" screen, Nano S
  *
  * up on Left button, down on right button, sign on both buttons.
  */
@@ -482,7 +417,7 @@ static unsigned int bagl_ui_sign_nanos_button(unsigned int button_mask, unsigned
 	return 0;
 }
 
-/** UI struct for the bottom "Deny Transaction" screen, Nano S. */
+/** UI struct for the bottom "Deny Transaction" screen, Nano S */
 static const bagl_element_t bagl_ui_deny_nanos[] = {
 // { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
 // text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
@@ -501,7 +436,7 @@ static const bagl_element_t bagl_ui_deny_nanos[] = {
 };
 
 /**
- * buttons for the bottom "Deny Transaction" screen
+ * buttons for the bottom "Deny Transaction" screen, Nano S
  *
  * up on Left button, down on right button, deny on both buttons.
  */
@@ -522,7 +457,7 @@ static unsigned int bagl_ui_deny_nanos_button(unsigned int button_mask, unsigned
 	return 0;
 }
 
-/** UI struct for the transaction description screen, Nano S. */
+/** UI struct for the transaction description single page screen, Nano S */
 static const bagl_element_t bagl_ui_tx_desc_nanos_single_page[] = {
 // { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
 // text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
@@ -542,7 +477,7 @@ static const bagl_element_t bagl_ui_tx_desc_nanos_single_page[] = {
 };
 
 /**
- * buttons for the transaction description screen
+ * buttons for the transaction description single page screen, Nano S
  *
  * up on Left button, down on right button.
  */
@@ -559,7 +494,7 @@ static unsigned int bagl_ui_tx_desc_nanos_single_page_button(unsigned int button
 	return 0;
 }
 
-/** UI struct for the transaction description screen, Nano S. */
+/** UI struct for the transaction description two page screen, Nano S */
 static const bagl_element_t bagl_ui_tx_desc_nanos_1[] = {
 // { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
 // text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
@@ -578,7 +513,7 @@ static const bagl_element_t bagl_ui_tx_desc_nanos_1[] = {
 /* */
 };
 
-/** UI struct for the transaction description screen, Nano S. */
+/** UI struct for the transaction description two page screen, Nano S */
 static const bagl_element_t bagl_ui_tx_desc_nanos_2[] = {
 // { {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, font_id, icon_id},
 // text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over,
@@ -598,7 +533,7 @@ static const bagl_element_t bagl_ui_tx_desc_nanos_2[] = {
 };
 
 /**
- * buttons for the transaction description screen
+ * buttons for the transaction description screen 1, Nano S
  *
  * up on Left button, down on right button.
  */
@@ -616,7 +551,7 @@ static unsigned int bagl_ui_tx_desc_nanos_1_button(unsigned int button_mask, uns
 }
 
 /**
- * buttons for the transaction description screen
+ * buttons for the transaction description screen 2, Nano S
  *
  * up on Left button, down on right button.
  */
@@ -655,7 +590,7 @@ static void copy_tx_desc_single_page(void) {
 	curr_tx_desc[1][MAX_TX_TEXT_WIDTH - 1] = '\0';
 }
 
-/** processes the Up button */
+/** processes the Up button, Nano S */
 static const bagl_element_t * tx_desc_up(const bagl_element_t *e) {
 	switch (uiState) {
 	case UI_TOP_SIGN:
@@ -720,7 +655,7 @@ static const bagl_element_t * tx_desc_up(const bagl_element_t *e) {
 	return NULL;
 }
 
-/** processes the Down button */
+/** processes the Down button, Nano S */
 static const bagl_element_t * tx_desc_dn(const bagl_element_t *e) {
 	switch (uiState) {
 	case UI_TOP_SIGN:
@@ -851,18 +786,6 @@ static const bagl_element_t *io_seproxyhal_touch_deny(const bagl_element_t *e) {
 	return 0; // do not redraw the widget
 }
 
-static unsigned int bagl_ui_idle_blue_button(unsigned int button_mask, unsigned int button_mask_counter) {
-	return 0;
-}
-
-static unsigned int bagl_ui_public_key_blue_button(unsigned int button_mask, unsigned int button_mask_counter) {
-    return 0;
-}
-
-static unsigned int bagl_ui_top_sign_blue_button(unsigned int button_mask, unsigned int button_mask_counter) {
-	return 0;
-}
-
 /** show the public key screen */
 void ui_public_key_1(void) {
 	uiState = UI_PUBLIC_KEY_1;
@@ -885,9 +808,7 @@ void ui_public_key_2(void) {
 void ui_idle(void) {
 	uiState = UI_IDLE;
 
-#if defined(TARGET_BLUE)
-    UX_DISPLAY(bagl_ui_idle_blue, NULL);
-#elif defined(TARGET_NANOS)
+#if defined(TARGET_NANOS)
     UX_DISPLAY(bagl_ui_idle_nanos, NULL);
 #elif defined(TARGET_NANOX)
     // reserve a display stack slot if none yet
@@ -936,9 +857,7 @@ static void ui_sign(void) {
 void ui_top_sign(void) {
 	uiState = UI_TOP_SIGN;
 
-#if defined(TARGET_BLUE)
-    UX_DISPLAY(bagl_ui_top_sign_blue, NULL);
-#elif defined(TARGET_NANOS)
+#if defined(TARGET_NANOS)
     UX_DISPLAY(bagl_ui_top_sign_nanos, NULL);
 #elif defined(TARGET_NANOX)
     // reserve a display stack slot if none yet
@@ -963,14 +882,6 @@ unsigned int get_apdu_buffer_length() {
 	return len0;
 }
 
-/** set the blue menu bar colour */
-void ui_set_menu_bar_colour(void) {
-#if defined(TARGET_BLUE)
-    UX_SET_STATUS_BAR_COLOR(COLOUR_WHITE, COLOUR_CPX_GREEN);
-    clear_tx_desc();
-#endif // #if TARGET_ID
-}
-
 /** sets the tx_desc variables to no information */
 static void clear_tx_desc(void) {
     for(uint8_t i=0; i<MAX_TX_TEXT_SCREENS; i++) {
@@ -979,28 +890,5 @@ static void clear_tx_desc(void) {
             tx_desc[i][j][MAX_TX_TEXT_WIDTH - 1] = '\0';
         }
     }
-    
-    strncpy(tx_desc[1][0], NO_INFO, sizeof(NO_INFO));
-    strncpy(tx_desc[2][0], NO_INFO, sizeof(NO_INFO));
 }
 
-/** returns to dashboard */
-static const bagl_element_t *bagl_ui_DASHBOARD_blue_button(const bagl_element_t *e)
-{
-    os_sched_exit(0);
-    return NULL;
-}
-
-/** goes to settings menu (pubkey display) on blue */
-static const bagl_element_t *bagl_ui_SETTINGS_blue_button(const bagl_element_t *e)
-{
-    UX_DISPLAY(bagl_ui_public_key_blue, NULL);
-    return NULL;
-}
-
-/** returns to CPX app on blue */
-static const bagl_element_t *bagl_ui_LEFT_blue_button(const bagl_element_t *e)
-{
-    ui_idle();
-    return NULL;
-}

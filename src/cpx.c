@@ -15,7 +15,6 @@
 /** if true, show a screen with the transaction from address. */
 #define SHOW_FROM_ADDRESS false
 
-
 /**
  * CPX TX fields
  */
@@ -56,12 +55,11 @@
 /**
  * transaction types.
  *
- * Currently only Claim and Contract are tested, as they are the only ones supported by the current wallets.
+ * Currently only TX_TRANSFER is implemented and tested.
  */
 enum TX_TYPE {
 	TX_MINER = 0x00, TX_TRANSFER = 0x01, TX_DEPLOY = 0x02, TX_CALL = 0x03, TX_REFUND = 0x04, TX_SCHEDULE = 0x05
 };
-
 
 /** MAX_TX_TEXT_WIDTH in blanks, used for clearing a line of text */
 static const char TXT_BLANK[] = "                 ";
@@ -98,7 +96,6 @@ static const char TX_REFUND_NM[] = "Refund";
 
 /** Label when displaying a Schedule transaction */
 static const char TX_SCHEDULE_NM[] = "Schedule";
-
 
 /** Label when a public key has not been set yet */
 static const char NO_PUBLIC_KEY_0[] = "No Public Key";
