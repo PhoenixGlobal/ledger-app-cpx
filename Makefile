@@ -27,14 +27,10 @@ APPVERSION = 0.0.2
 APP_LOAD_PARAMS = --path "44'/888'" --appFlags 0x240 --apdu $(COMMON_LOAD_PARAMS)
 APP_DELETE_PARAMS =  --apdu $(COMMON_DELETE_PARAMS)
 
-ifeq ($(TARGET_NAME),TARGET_BLUE)
-ICONNAME=blue_app_neo.gif
+ifeq ($(TARGET_NAME),TARGET_NANOX)
+    ICONNAME=nanox_app_cpx.gif
 else
-	ifeq ($(TARGET_NAME),TARGET_NANOX)
-ICONNAME=nanox_app_cpx.gif
-	else
-ICONNAME=nanos_app_cpx.gif
-	endif
+    ICONNAME=nanos_app_cpx.gif
 endif
 
 
