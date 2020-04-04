@@ -39,9 +39,6 @@
 /** length of a tx.output Address before encoding, which is the length of <address_prefix>+<script_hash>+<checksum> */
 #define ADDRESS_LEN (2 + SCRIPT_HASH_LEN + SCRIPT_HASH_CHECKSUM_LEN)
 
-/** the length of a SHA256 hash */
-#define SHA256_HASH_LEN 32
-
 /** Apex address prefix */
 #define APEX_ADDRESS_PREFIX_1	0x05	// bin for 'A'
 #define APEX_ADDRESS_PREFIX_2	0x48	// bin for 'P'
@@ -278,9 +275,9 @@ static void to_address(char * dest, unsigned int dest_len, const unsigned char *
 
 	// do a sha256 hash of the address twice.
 	cx_sha256_init(&address_hash);
-	cx_hash(&address_hash.header, CX_LAST, address, SCRIPT_HASH_LEN + 2, address_hash_result_0, 32);
+	cx_hash(&address_hash.header, CX_LAST, address, SCRIPT_HASH_LEN + 2, address_hash_result_0, SHA256_HASH_LEN);
 	cx_sha256_init(&address_hash);
-	cx_hash(&address_hash.header, CX_LAST, address_hash_result_0, SHA256_HASH_LEN, address_hash_result_1, 32);
+	cx_hash(&address_hash.header, CX_LAST, address_hash_result_0, SHA256_HASH_LEN, address_hash_result_1, SHA256_HASH_LEN);
 
 	// add the first bytes of the hash as a checksum at the end of the address.
 	os_memmove(address + 2 + SCRIPT_HASH_LEN, address_hash_result_1, SCRIPT_HASH_CHECKSUM_LEN);
@@ -554,12 +551,11 @@ void public_key_hash160(unsigned char * in, unsigned short inlen, unsigned char 
 		cx_sha256_t shasha;
 		cx_ripemd160_t riprip;
 	} u;
-	unsigned char buffer[32];
-
+	unsigned char buffer[SHA256_HASH_LEN];
 	cx_sha256_init(&u.shasha);
-	cx_hash(&u.shasha.header, CX_LAST, in, inlen, buffer, 32);
+	cx_hash(&u.shasha.header, CX_LAST, in, inlen, buffer, sizeof(buffer));
 	cx_ripemd160_init(&u.riprip);
-	cx_hash(&u.riprip.header, CX_LAST, buffer, 32, out, 20);
+	cx_hash(&u.riprip.header, CX_LAST, buffer, sizeof(buffer), out, 20);
 }
 
 void display_public_key(const unsigned char * public_key) {
