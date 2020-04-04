@@ -725,7 +725,6 @@ const bagl_element_t*io_seproxyhal_touch_approve(const bagl_element_t *e) {
 
 	if (G_io_apdu_buffer[2] == P1_LAST) {
 		unsigned int raw_tx_len_except_bip44 = raw_tx_len - BIP44_BYTE_LENGTH;
-
 		unsigned char * bip44_in = raw_tx + raw_tx_len_except_bip44;
 
 		/** BIP44 path, used to derive the private key from the mnemonic by calling os_perso_derive_node_bip32. */
@@ -736,21 +735,28 @@ const bagl_element_t*io_seproxyhal_touch_approve(const bagl_element_t *e) {
 			bip44_in += 4;
 		}
 
-		cx_ecfp_private_key_t privateKey;
 		unsigned char privateKeyData[32];
 		os_perso_derive_node_bip32(CX_CURVE_256R1, bip44_path, BIP44_PATH_LEN, privateKeyData, NULL);
+
+		cx_ecfp_private_key_t privateKey;
 		cx_ecdsa_init_private_key(CX_CURVE_256R1, privateKeyData, 32, &privateKey);
 
 		//hash and sign
-		unsigned char hashResult[32];
-		cx_hash(&hash.header, CX_LAST, raw_tx, raw_tx_len_except_bip44, hashResult, 32);
+		unsigned char hashResult[SHA256_HASH_LEN];
+		cx_hash(&hash.header, CX_LAST, raw_tx, raw_tx_len_except_bip44, hashResult, sizeof(hashResult));
 
 		tx = cx_ecdsa_sign(&privateKey,  CX_RND_RFC6979 | CX_LAST, CX_SHA256, hashResult, sizeof(hashResult), G_io_apdu_buffer, sizeof(G_io_apdu_buffer), NULL);
+
+		// clear private key data
+		cx_ecdsa_init_private_key(CX_CURVE_256R1, NULL, 0, &privateKey);
+		// memset(&privateKey, 0x00, sizeof(privateKey));
+		memset(privateKeyData, 0x00, sizeof(privateKeyData));
 
 		hashTainted = 1;
         clear_tx_desc();
 		raw_tx_ix = 0;
 		raw_tx_len = 0;
+
 #if 0
 		// add hash to the response, so we can see where the bug is.
 		G_io_apdu_buffer[tx++] = 0xFF;

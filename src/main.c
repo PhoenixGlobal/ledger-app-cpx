@@ -153,6 +153,7 @@ static void cpx_main(void) {
 						// we're getting a transaction to sign, in parts.
 						case INS_SIGN: {
 							Timer_Restart();
+
 							// check the third byte (0x02) for the instruction subtype.
 							if ((G_io_apdu_buffer[2] != P1_MORE) && (G_io_apdu_buffer[2] != P1_LAST)) {
 								hashTainted = 1;
@@ -204,9 +205,9 @@ static void cpx_main(void) {
 								io_seproxyhal_touch_approve(NULL);
 							}
 						}
-							break;
+						break;
 
-							// we're asked for the public key.
+						// we're asked for the public key.
 						case INS_GET_PUBLIC_KEY: {
 							Timer_Restart();
 
@@ -227,6 +228,7 @@ static void cpx_main(void) {
 								bip44_path[i] = (bip44_in[0] << 24) | (bip44_in[1] << 16) | (bip44_in[2] << 8) | (bip44_in[3]);
 								bip44_in += 4;
 							}
+
 							unsigned char privateKeyData[32];
 							os_perso_derive_node_bip32(CX_CURVE_256R1, bip44_path, BIP44_PATH_LEN, privateKeyData, NULL);
 							cx_ecdsa_init_private_key(CX_CURVE_256R1, privateKeyData, 32, &privateKey);
@@ -235,17 +237,25 @@ static void cpx_main(void) {
 							cx_ecdsa_init_public_key(CX_CURVE_256R1, NULL, 0, &publicKey);
 							cx_ecfp_generate_pair(CX_CURVE_256R1, &publicKey, &privateKey, 1);
 
-							// push the public key onto the response buffer.
-							os_memmove(G_io_apdu_buffer, publicKey.W, 65);
-							tx = 65;
+							// clear private key data
+							cx_ecdsa_init_private_key(CX_CURVE_256R1, NULL, 0, &privateKey);
+							// memset(&privateKey, 0x00, sizeof(privateKey));
+							memset(privateKeyData, 0x00, sizeof(privateKeyData));
 
 							display_public_key(publicKey.W);
 							refresh_public_key_display();
 
+							// push the public key onto the response buffer.
+							if(G_io_apdu_buffer[1] == INS_GET_PUBLIC_KEY) {
+								// push the public key onto the response buffer.
+								os_memmove(G_io_apdu_buffer, publicKey.W, 65);
+								tx = 65;
+							}
+
 							// return 0x9000 OK.
 							THROW(0x9000);
 						}
-							break;
+						break;
 
 						case 0xFF: // return to dashboard
 							goto return_to_dashboard;

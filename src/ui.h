@@ -9,6 +9,8 @@
 #include <stdbool.h>
 #include "os_io_seproxyhal.h"
 #include "bagl.h"
+#include "sha256_hash_len.h"
+
 
 /** the timer */
 extern int exit_timer;
