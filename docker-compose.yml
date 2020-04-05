@@ -1,0 +1,13 @@
+version: '3.2'
+
+services:
+
+  ledgerbuild:
+    build:
+      context: dockerapp
+    image: ledgerbuild
+    container_name: ledgerbuild
+
+    volumes:
+      - ~/docker-shared/:/docker-shared
+
