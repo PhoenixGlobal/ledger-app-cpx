@@ -1,69 +1,128 @@
+# CPX App for the Ledger Nano S
 
-# ledger-app-cpx CE
+2020-05-06
 
-This is the community edition of the Ledger app for the CPX Cryptocoin.  
+This is the community edition of the Ledger app for the CPX Cryptocoin.
 (Note: currently only Nano S supported)
 
-... more information will follow
+### Introduction
+This document describes how to build the ledger-app-cpx and deploy it locally
+via USB connection on a Ledger Nano S.
 
-<!-- Documentation on how it works is here:
- [sequence diagrams](https://coranos.github.io/blue-app-neo/docs/index.html)
+The development has been done and tested on OSX Catalina, but should naturally
+be executable on any Linux based system (e.g. Ubuntu or CentOS) with only minor adjustemts.
 
+Building and managing the lifecycle (e.g. installation) of the app is performed in two separate environments:  
+>\# Host (application lifecycle)    
+> - Application source code
+> - GCC crosscompiler for ARM (gcc-arm-none-eabi)
+> - C language family frontend for LLVM (clang+llvm-7.0.0)
+> - Ledger Nano S SDK (nanos-secure-sdk)
+> - Virtual python3 environment with tools to communicate with the Ledger device  
+> (install/delete apps and test execution)
 
-Run `make` to build the application  
-Run `make load` to load the application onto the device.  
-Run `make delete` to delete the application from the device.  
+> \# Docker (application build)   
+> - Access to the host environment via shared volume  
+> - Additional libraries for gcc  
+> - Build the application in a controlled and segregated environment
 
-After installing and running the application, you can run `test_signature_cpx.py` to test signing transactions over USB.
+The two environments should be setup and operated in two parallel terminal sessions in order to speed up and optimize the development lifecycle.  
 
-Each transaction should display correctly in the UI.
-Use the buttons individually to scroll up and down to view the transaction details.
-Either Sign or Deny the transaction by clicking both top buttons on the 'Sign Tx Now', 'Sign Tx' and 'Deny Tx' screens.
-The only difference between 'Sign Tx Now' and 'Sign Tx' is their placement order in the screen list, both sign the transaction.
--->
-<!--
-Note that in order to run `test_signature_cpx.py`, you must install the `fastecdsa` Python package:
+### Host Environment Setup 
+Open the first terminal session (T1) and perform the following steps:
 
-```
-pip install ecdsa
-```
+1. Create and change into the shared docker folder in your homedir:  
+`mkdir -p ~/docker-shared/ledgerbuild`  
+`cd ~/docker-shared/ledgerbuild`  
+2. Clone the git repository and change into the downloaded folder:  
+`git clone https://github.com/APEX-Network/ledger-app-cpx.git`  
+`cd ledger-app-cpx`
 
-also install GMP (https://gmplib.org/)
--->
+3. Prepare the environment setup by calling the following script  
+  (for now only parameter 's' (Ledger Nano S) is supported):  
+  `./prepare-devenv.sh s`  
 
-See [The Environment Setup Guide](https://coranos.github.io/neo/ledger-nano-s/development/environment.html) if you want to build the appyourself..
-========
+   This will create a subfolder 'dev-env', if not existing, in which all 
+   neccessary tools and SDKs are downloaded and unpacked.  
+   Also a virtual python3 environment will be created and required tools for
+   communicating with the Ledger hardware will be installed.  
 
-See [Ledger's documentation](http://ledger.readthedocs.io) to get started.
-=======
+4. Activate the virtual python3 environment:  
+`source dev-env/ledger_py3/bin/activate`  
 
-<!--
-# blue-app-neo
+5. Ledger Nano S custom CA installation: to be done only once!  
+In Ledger app development, it is necessary to enter your PIN code each time you install an unsigned app.  
+By installing a custom certificate once on your device you can avoid having to retype your PIN each time you adjust your app.  
+Here are the steps for the Ledger Nano S:
 
-# error codes
+   a.) Generate a public / private keypair using the following command:  
+  `python3 -m ledgerblue.genCAPair`  
+    Public key : pubkeyxxx  
+    Private key: privkeyxxx
 
-any response that doesn not end with `0x9000` is an error.
-Some errors are standard errors from the APDU (Application Protocol Data Unit)
+   b.) Enter recovery mode on your Ledger Nano S:  
+   Do this by unplugging it then holding down the right button (near the hinge, away from USB port) while plugging it in again.  
+   Recovery mode should then appear on the screen. Enter your pin and continue.
+  
+   c.) Load your public key onto the Ledger Nano S:  
+   Paste the public key generated at step 5a after --public.  
+   Paste the private key generated at step 5a after --rootPrivateKey.  
+   Include a --name parameter containing the name of the custom certificate (any string will do):  
+  `python3 -m ledgerblue.setupCustomCA --apdu --rootPrivateKey=privkeyxxx --public=pubkeyxxx --name=TestCA --targetId 0x31100004`  
 
-http://techmeonline.com/apdu-status-error-codes/
+6. Export following environment variables in your activated virtual python environment:  
+`export BOLOS_SDK=$(pwd)/dev-env/SDK/nanos-secure-sdk`  
+`export BOLOS_ENV=$(pwd)/dev-env/CC`  
+`export SCP_PRIVKEY=privkeyxxx`
 
-All errors on NEO 1.1 start with 0x6D (because I read the spec wrong).
+### Docker Image Setup  
+Open the second terminal session (T2) and perform the following steps:  
 
-- `0x6D00` unknown command. (this is to spec, the rest are enoded as 'unknown command' `0x6D` but should be 'unknown parameter' `0x6B`)
-- `0x6D01` error, unknown user interface screen, up button was pressed.
-- `0x6D02` error, unknown user interface screen, down button was pressed.
-- `0x6D03` buffer underflow in transaction parsing while skipping over bytes.
-- `0x6D04` variable length byte array decoding error.
-- `0x6D05` buffer underflow in transaction parsing while reading bytes.
-- `0x6D06` transaction type decoding error.
-- `0x6D07` transaction attribute usage type decoding error.
-- `0x6D08` signing message too short, bip44 path unreadable.
-- `0x6D09` public key message too short, bip44 path unreadable.
-- `0x6D10` signed public key message too short, bip44 path unreadable.
-- `0x6D11` base_x encoded string is too long for available encoding memory.
-- `0x6D12` base_x encoded string is too long for available decoding memory.
-- `0x6D14` base_x encoding error.
+1. Change into the shared docker folder in your homedir:  
+`cd ~/docker-shared/ledgerbuild/ledger-app-cpx`  
 
+2. Execute the following command in order to compose the docker image:  
+`docker-compose build`
 
-This will be fixed to use the correct codes (0x9210 No more storage available, 0x6B00 wrong parameter) in 1.2, sometime in 2018.
--->
+### Build the application  
+
+Perform the following steps in T2:  
+
+1. Start the docker container into an interactive bash session:  
+`./start_docker.sh`
+
+2. Change into the folder containing the ledger app source code:  
+`cd /docker-shared/ledgerbuild/ledger-app-cpx/` 
+
+3. Build the app (ignore the warnings from the SDK):  
+`make`
+
+### Load the application  
+Perform the following steps in T1:
+
+1. Connect your Ledger Nano S device via USB to the host and unlock with your PIN    
+  
+2. Install the app:  
+`make load`
+
+3. Delete the app:  
+`make delete`
+
+  (Allow trusted manager on the Ledger device, when running the following command for the first time)
+  
+### Test the application  
+Open the installed CPX app on the Ledger device and use one of the following
+test scripts in T1:
+
+1. Retrieve public key:  
+`./test_get_pubkey.py`
+
+2. Sign TX:  
+`./test_signature_cpx.py`
+
+----
+Useful resources:  
+
+[Ledger's documentation resources](http://ledger.readthedocs.io) for the complete Ledger documentation
+
+[Ledger Documentation Hub (PDF)](https://buildmedia.readthedocs.org/media/pdf/ledger/latest/ledger.pdf) for application developers
