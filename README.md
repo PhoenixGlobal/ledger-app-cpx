@@ -123,6 +123,6 @@ test scripts in T1:
 ----
 Useful resources:  
 
-[Ledger's documentation resources](http://ledger.readthedocs.io) for the complete Ledger documentation
+[Ledger's documentation Hub](http://ledger.readthedocs.io) for the complete Ledger documentation
 
-[Ledger Documentation Hub (PDF)](https://buildmedia.readthedocs.org/media/pdf/ledger/latest/ledger.pdf) for application developers
+[Ledger Documentation Hub (as PDF)](https://buildmedia.readthedocs.org/media/pdf/ledger/latest/ledger.pdf)
