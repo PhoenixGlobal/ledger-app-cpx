@@ -33,7 +33,6 @@ if [ ! -d dev-env ]; then
     curl -L https://launchpad.net/gcc-arm-embedded/5.0/5-2016-q1-update/+download/gcc-arm-none-eabi-5_3-2016q1-20160330-linux.tar.bz2 -o gcc-arm-none-eabi-5_3-2016q1-20160330-linux.tar.bz2
     tar xf gcc-arm-none-eabi-5_3-2016q1-20160330-linux.tar.bz2
     rm gcc-arm-none-eabi-5_3-2016q1-20160330-linux.tar.bz2
-    cp -r gcc-arm-none-eabi-5_3-2016q1 dev-env/CC/nanox/gcc-arm-none-eabi-5_3-2016q1
     mv gcc-arm-none-eabi-5_3-2016q1 dev-env/CC/gcc-arm-none-eabi-5_3-2016q1
 
     curl -L http://releases.llvm.org/7.0.0/clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz -o clang+llvm.tar.xz
