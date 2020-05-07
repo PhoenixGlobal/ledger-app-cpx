@@ -138,9 +138,10 @@ signature       [70] 304402203895d041b890ddadb9f4873bf2036f65ec246d9e77b355bfceb
 
 Tests have been performed on a Ledger Nano S with a public known test mnemonic setup (can be found [here](https://coranos.github.io/neo/ledger-nano-s/recovery/)):
 
-> - Mnemonic:     online ramp onion faculty trap clerk near rabbit busy gravity prize employ exit horse found slogan effort dash siren buzz sport pig coconut 
+> - Mnemonic:     online ramp onion faculty trap clerk near rabbit busy gravity prize employ exit horse found slogan effort dash siren buzz sport pig coconut element
 > - ElementPath:  m/44'/888'/0'/0/0
-> - Address:         AeKd54zJdgqXy41NgH1PicXTVcz3RdRFdhWIFKxGtKtYTsxCW997F762Zn62C2e72gQ9XMPkkL2231Rc4GuvSCuba 
+> - Address:         AeKd54zJdgqXy41NgH1PicXTVcz3RdRFdh  
+> - WIF:                 KxGtKtYTsxCW997F762Zn62C2e72gQ9XMPkkL2231Rc4GuvSCuba 
 
 ----
 Useful resources:  
