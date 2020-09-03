@@ -40,7 +40,7 @@ if [ ! -d dev-env ]; then
     rm clang+llvm.tar.xz
     mv clang+llvm* dev-env/CC/clang-arm-fropi
 
-    curl -L https://github.com/LedgerHQ/nanos-secure-sdk/archive/nanos-160.tar.gz -o nanos-secure-sdk.tar.gz
+    curl -L https://github.com/LedgerHQ/nanos-secure-sdk/archive/nanos-161.tar.gz -o nanos-secure-sdk.tar.gz
     tar xf nanos-secure-sdk.tar.gz
     rm nanos-secure-sdk.tar.gz
     mv nanos-secure-sdk* dev-env/SDK/nanos-secure-sdk
