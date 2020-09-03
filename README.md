@@ -1,6 +1,6 @@
 # CPX App for the Ledger Nano S
 
-2020-05-07
+2020-07-20
 
 This is the community edition of the Ledger app for the CPX Cryptocoin.
 (Note: currently only Nano S supported)
@@ -31,6 +31,28 @@ Building and managing the lifecycle (e.g. installation) of the app is performed 
 The two environments should be setup and operated in two parallel terminal sessions in order to speed up and optimize the development lifecycle.  
 
 ### Host Environment Setup 
+
+Host installation and setup depends on the used operating system (Linux/macOS) and corresponding version/distribution.
+
+> CentOS 7 based hosts installation:
+> - Install host system from a recent CentOS 7 ISO image (e.g. CentOS-7-x86_64-Minimal-2003.iso)
+> - Perform update of all system packages:  
+`yum -y update`
+> 
+> - Install the following required packages and their dependencies via yum:  
+`yum -y install python3 python3-devel python-virtualenv libusb-devel libusb1-devel gcc libffi-devel autoconf libtool systemd-devel git yum-utils bzip2`  
+>  
+> - Install latest docker ce and start the service:  
+`yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo`  
+`yum -y install docker-ce docker-ce-cli containerd.io`  
+`systemctl start docker`  
+>  
+> - Install latest docker-compose and make the binary executable:  
+`curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose`  
+`chmod +x /usr/local/bin/docker-compose`  
+
+All required dependencies are installed and the host is prepared for the next steps.
+
 Open the first terminal session (T1) and perform the following steps:
 
 1. Create and change into the shared docker folder in your homedir:  
