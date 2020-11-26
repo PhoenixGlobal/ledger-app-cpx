@@ -173,3 +173,5 @@ Useful resources:
 [Ledger Documentation Hub (as PDF)](https://buildmedia.readthedocs.org/media/pdf/ledger/latest/ledger.pdf)
 
 [ledgerblue](https://pypi.org/project/ledgerblue/) Python tools to communicate with Ledger Blue, Nano S and Nano X and manage applications life cycle
+
+
